@@ -31,8 +31,8 @@ Duration: 2,681 podcast clips
 ✔ Normalize Loudness
 ✔ Trim Silence (optional applied)
 ✔ Organize dataset folder structure
-
-##📂 Project Structure
+```
+📂 Project Structure
 ├── data/
 │   ├── raw/       (original MP3)
 │   ├── wav/       (converted WAV)
