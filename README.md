@@ -32,7 +32,7 @@ Duration: 2,681 podcast clips
 ✔ Trim Silence (optional applied)
 ✔ Organize dataset folder structure
 
-📂 Project Structure
+##📂 Project Structure
 ├── data/
 │   ├── raw/       (original MP3)
 │   ├── wav/       (converted WAV)
@@ -46,7 +46,7 @@ Duration: 2,681 podcast clips
 ├── README.md
 ├── requirements.txt
 └── .gitignore
-
+```
 🧩 Technologies & Libraries
 
 Python 3.10
