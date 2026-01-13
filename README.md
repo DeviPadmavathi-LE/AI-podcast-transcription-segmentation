@@ -47,6 +47,7 @@ Duration: 2,681 podcast clips
 ├── requirements.txt
 └── .gitignore
 ```
+```
 🧩 Technologies & Libraries
 
 Python 3.10
@@ -61,6 +62,7 @@ numpy
 
 pydub
 
-openai-whisper (for speech-to-text in milestone-2)
+openai-whisper 
 
 tqdm
+```
