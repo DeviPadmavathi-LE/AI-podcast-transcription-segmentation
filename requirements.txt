@@ -4,3 +4,6 @@ noisereduce
 numpy
 scipy
 pydub
+sentence-transformers
+scikit-learn
+torch
