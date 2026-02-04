@@ -1,5 +1,6 @@
 from transformers import pipeline
 import json
+
 from pathlib import Path
 
 summarizer = pipeline(
@@ -13,7 +14,7 @@ def chunk(text, max_words=450):
     if len(words) <= max_words:
         return [text]
     return [" ".join(words[i:i+max_words]) for i in range(0, len(words), max_words)]
-
+ 
 def summarize_text(text):
     wc = len(text.split())
     max_len = min(140, max(40, wc // 2))

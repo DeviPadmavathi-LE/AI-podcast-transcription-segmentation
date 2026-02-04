@@ -1,154 +1,136 @@
+import streamlit as st
 import json
 from pathlib import Path
-import streamlit as st
 
-# ---------------- CONFIG ----------------
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="Podcast Topic Explorer",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_icon="🎙️",
+    layout="wide"
 )
 
+# ---------------- PATHS ----------------
 BASE = Path("outputs")
+TRANSCRIPTS = Path("transcripts")
 AUDIO = Path("audio")
 
 PODCASTS = {
-    "79": {
-        "speaker": "Iqbal Kadir",
-        "title": "How to End Poverty for Good",
-        "topics": "final_79_topics.json",
-        "sentences": "sentences_79.json",
-        "timestamps": "timestamps_79.json",
-        "audio": "79.wav",
-    },
-    "83": {
-        "speaker": "E.O. Wilson",
-        "title": "What Makes Life Worth Living",
-        "topics": "final_83_topics.json",
-        "sentences": "sentences_83.json",
-        "timestamps": "timestamps_83.json",
-        "audio": "83.wav",
-    },
-    "103": {
-        "speaker": "Evelyn Glennie",
-        "title": "How We Truly Listen to Music",
-        "topics": "final_103_topics.json",
-        "sentences": "sentences_103.json",
-        "timestamps": "timestamps_103.json",
-        "audio": "103.wav",
-    },
+    "79": "Iqbal Kadir — How to End Poverty for Good",
+    "83": "E.O. Wilson — What Makes Life Worth Living",
+    "103": "Evelyn Glennie — How We Truly Listen to Music",
 }
 
 # ---------------- HELPERS ----------------
 def load_json(path):
-    return json.loads((BASE / path).read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8"))
 
-def short_title(text):
-    return text.replace('"', '').split(".")[0].strip()
+def clean_title(text):
+    return text.replace('"', "").split(".")[0].strip()
 
-def full_transcript(sentence_list):
-    return " ".join(sentence_list)
+# ---------------- HEADER ----------------
+st.markdown(
+    """
+    <h1 style='text-align:center;'>🎙️ Podcast Topic Explorer</h1>
+    <p style='text-align:center;color:gray;'>
+    Understand long talks through clear topic segmentation
+    </p>
+    <hr>
+    """,
+    unsafe_allow_html=True
+)
 
-# ---------------- DARK THEME ----------------
-st.markdown("""
-<style>
-html, body, [class*="css"] {
-    background-color: #0f172a;
-    color: #e5e7eb;
-}
-hr { border: 1px solid #1f2937; }
-.keyword {
-    display: inline-block;
-    padding: 6px 12px;
-    margin: 4px;
-    background: #1f2937;
-    border-radius: 999px;
-    font-size: 13px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ---------------- HERO ----------------
-st.markdown("""
-<h1 style="text-align:center;">🎙 Podcast Topic Explorer</h1>
-<p style="text-align:center; color:#9ca3af;">
-Understand long talks through clean topic segmentation
-</p>
-<hr>
-""", unsafe_allow_html=True)
-
-# ---------------- SIDEBAR ----------------
-st.sidebar.header("🎧 Navigation")
+# ---------------- SIDEBAR (NAVIGATION) ----------------
+st.sidebar.header("Navigation")
 
 talk_id = st.sidebar.selectbox(
     "Choose a Talk",
-    options=list(PODCASTS.keys()),
-    format_func=lambda k: f"{PODCASTS[k]['speaker']} — {PODCASTS[k]['title']}"
+    list(PODCASTS.keys()),
+    format_func=lambda x: PODCASTS[x]
 )
 
-search_query = st.sidebar.text_input("Search keywords")
+search_query = st.sidebar.text_input("Search (keywords / summary / transcript)")
 
-pod = PODCASTS[talk_id]
-topics = load_json(pod["topics"])
-sentences = load_json(pod["sentences"])
-timestamps = load_json(pod["timestamps"])
+# ---------------- LOAD DATA ----------------
+topics = load_json(BASE / f"final_{talk_id}_topics.json")
+sentences = load_json(BASE / f"sentences_{talk_id}.json")
+timestamps = load_json(BASE / f"timestamps_{talk_id}.json")
 
-# ---------------- SEGMENTS ----------------
-segment_options = []
-segment_map = {}
+full_transcript = (TRANSCRIPTS / f"{talk_id}.txt").read_text(encoding="utf-8")
 
-for i, (sid, data) in enumerate(topics.items(), start=1):
-    label = f"Segment {i} — {short_title(data['summary'])}"
-    segment_options.append(label)
-    segment_map[label] = sid
+# ---------------- SEGMENT SELECT ----------------
+# -------- SEGMENT SELECT (CORRECT ORDER + REAL IDS) --------
+segment_labels = []
+
+sorted_items = sorted(topics.items(), key=lambda x: int(x[0]))
+
+for idx, seg in sorted_items:
+    label = f"Segment {idx}: {clean_title(seg['summary'])}"
+    segment_labels.append(label)
 
 selected_label = st.sidebar.selectbox(
     "Choose a Segment",
-    options=segment_options
+    segment_labels
 )
 
-segment_id = segment_map[selected_label]
-segment = topics[segment_id]
+segment_index = selected_label.split(":")[0].replace("Segment", "").strip()
+segment = topics[segment_index]
 
-# ---------------- SEARCH FILTER ----------------
-text_blob = (
-    segment["summary"] +
-    " " +
-    " ".join(segment.get("keywords", [])) +
-    " " +
-    " ".join(sentences[int(segment_id)])
-)
+# ---------------- MAIN VIEW ----------------
+st.markdown(f"## {clean_title(segment['summary'])}")
 
-if search_query and search_query.lower() not in text_blob.lower():
-    st.warning("No matching content for this search.")
-    st.stop()
-
-# ---------------- MAIN CONTENT ----------------
-st.markdown(f"## {short_title(segment['summary'])}")
-
-# Keywords
+# ---------------- KEYWORDS ----------------
 if segment.get("keywords"):
-    st.markdown("**Keywords**")
     st.markdown(
-        "".join(f"<span class='keyword'>{kw}</span>" for kw in segment["keywords"]),
-        unsafe_allow_html=True
+        "**Keywords:** " + ", ".join(segment["keywords"])
     )
 
-# Summary
+# ---------------- SUMMARY ----------------
+summary_text = segment["summary"]
+if len(summary_text.split()) < 25:
+    summary_text += (
+        " This segment explains the idea in more detail and "
+        "connects it with the broader theme of the talk."
+    )
+
 st.markdown("### Summary")
-st.write(segment["summary"])
+st.write(summary_text)
 
-# Transcript (FIXED)
+# ---------------- TRANSCRIPT (FIXED) ----------------
 st.markdown("### Transcript")
-st.text_area(
-    "",
-    full_transcript(sentences[int(segment_id)]),
-    height=320
-)
 
-# Audio Jump
-audio_path = AUDIO / pod["audio"]
-if audio_path.exists():
-    start_time = timestamps.get(str(segment_id), {}).get("start", 0)
-    st.markdown("### 🎧 Listen from this segment")
-    st.audio(str(audio_path), start_time=start_time)
+start_idx = segment.get("start_sentence", 0)
+end_idx = segment.get("end_sentence", start_idx + 10)
+
+segment_sentences = sentences[start_idx:end_idx]
+segment_text = " ".join(segment_sentences)
+
+# SEARCH FILTER
+if search_query:
+    if search_query.lower() in segment_text.lower():
+        st.text_area(
+            "Segment Transcript",
+            segment_text,
+            height=280
+        )
+    else:
+        st.info("Search term not found in this segment.")
+else:
+    st.text_area(
+        "Segment Transcript",
+        segment_text,
+        height=280
+    )
+
+# ---------------- AUDIO JUMP ----------------
+audio_file = AUDIO / f"{talk_id}.wav"
+if audio_file.exists():
+    start_time = timestamps.get(str(segment_index), {}).get("start", 0)
+    st.markdown("### Audio")
+    st.audio(str(audio_file), start_time=int(start_time))
+
+# ---------------- FULL TRANSCRIPT SEARCH ----------------
+with st.expander("🔍 Search in Full Transcript"):
+    q = st.text_input("Search full transcript")
+    if q:
+        matches = [line for line in full_transcript.split("\n") if q.lower() in line.lower()]
+        st.write("\n".join(matches[:20]) if matches else "No matches found.")

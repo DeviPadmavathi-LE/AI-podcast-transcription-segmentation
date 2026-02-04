@@ -185,3 +185,30 @@ All generated outputs are stored in the outputs directory:
 This project demonstrates an end-to-end AI pipeline for transforming long-form audio into structured, searchable information. By combining speech recognition, semantic segmentation, keyword extraction, summarization, and an interactive interface, the system significantly improves podcast accessibility.
 
 Clustering-based segmentation produced more coherent topics, while similarity-based segmentation captured finer transitions. The final application bridges advanced AI processing with real-world usability.
+
+---
+
+# Milestone 3 – Week 5: Visualization & Detail Enhancements
+
+This milestone focuses on improving presentation and interpretability of previously generated podcast analysis outputs.
+
+## Implemented Components
+
+### 1. Sentiment Analysis
+- Applied TextBlob polarity scoring on segment summaries
+- Classified each segment as Positive, Neutral, or Negative
+
+### 2. Keyword Visualization Preparation
+- Aggregated extracted keywords across segments
+- Computed keyword frequencies for visualization
+
+### 3. Summary Refinement
+- Cleaned and trimmed summaries to 2–3 concise sentences
+- Removed repetition and filler text
+
+## Notes
+- No new NLP models were trained
+- All enhancements reuse outputs from previous milestones
+- Focus was on clarity, readability, and usability
+
+This completes the Week-5 visualization and enhancement objectives.

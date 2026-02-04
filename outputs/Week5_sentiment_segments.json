@@ -1,0 +1,542 @@
+{
+  "9": {
+    "sentiment": "Negative",
+    "score": -0.2
+  },
+  "122": {
+    "sentiment": "Positive",
+    "score": 0.5
+  },
+  "20": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "112": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "124": {
+    "sentiment": "Negative",
+    "score": -0.65
+  },
+  "119": {
+    "sentiment": "Negative",
+    "score": -0.312
+  },
+  "129": {
+    "sentiment": "Positive",
+    "score": 0.312
+  },
+  "70": {
+    "sentiment": "Positive",
+    "score": 0.492
+  },
+  "14": {
+    "sentiment": "Positive",
+    "score": 0.229
+  },
+  "123": {
+    "sentiment": "Negative",
+    "score": -0.143
+  },
+  "85": {
+    "sentiment": "Neutral",
+    "score": -0.094
+  },
+  "121": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "106": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "77": {
+    "sentiment": "Positive",
+    "score": 0.5
+  },
+  "89": {
+    "sentiment": "Neutral",
+    "score": -0.1
+  },
+  "131": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "116": {
+    "sentiment": "Positive",
+    "score": 0.169
+  },
+  "3": {
+    "sentiment": "Positive",
+    "score": 0.176
+  },
+  "127": {
+    "sentiment": "Positive",
+    "score": 0.35
+  },
+  "109": {
+    "sentiment": "Positive",
+    "score": 0.6
+  },
+  "93": {
+    "sentiment": "Neutral",
+    "score": -0.1
+  },
+  "87": {
+    "sentiment": "Positive",
+    "score": 0.5
+  },
+  "104": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "83": {
+    "sentiment": "Positive",
+    "score": 0.8
+  },
+  "76": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "101": {
+    "sentiment": "Neutral",
+    "score": 0.05
+  },
+  "86": {
+    "sentiment": "Neutral",
+    "score": -0.021
+  },
+  "90": {
+    "sentiment": "Positive",
+    "score": 0.2
+  },
+  "100": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "97": {
+    "sentiment": "Positive",
+    "score": 0.102
+  },
+  "117": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "88": {
+    "sentiment": "Positive",
+    "score": 0.379
+  },
+  "111": {
+    "sentiment": "Negative",
+    "score": -0.125
+  },
+  "78": {
+    "sentiment": "Positive",
+    "score": 0.35
+  },
+  "133": {
+    "sentiment": "Positive",
+    "score": 0.263
+  },
+  "118": {
+    "sentiment": "Positive",
+    "score": 0.5
+  },
+  "74": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "99": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "103": {
+    "sentiment": "Neutral",
+    "score": -0.045
+  },
+  "115": {
+    "sentiment": "Neutral",
+    "score": 0.009
+  },
+  "69": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "120": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "125": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "91": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "113": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "8": {
+    "sentiment": "Neutral",
+    "score": 0.1
+  },
+  "114": {
+    "sentiment": "Neutral",
+    "score": 0.1
+  },
+  "58": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "2": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "56": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "38": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "98": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "105": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "128": {
+    "sentiment": "Neutral",
+    "score": -0.1
+  },
+  "81": {
+    "sentiment": "Negative",
+    "score": -0.3
+  },
+  "68": {
+    "sentiment": "Neutral",
+    "score": 0.1
+  },
+  "63": {
+    "sentiment": "Neutral",
+    "score": 0.1
+  },
+  "71": {
+    "sentiment": "Positive",
+    "score": 0.266
+  },
+  "57": {
+    "sentiment": "Positive",
+    "score": 0.35
+  },
+  "107": {
+    "sentiment": "Positive",
+    "score": 0.5
+  },
+  "134": {
+    "sentiment": "Neutral",
+    "score": -0.022
+  },
+  "132": {
+    "sentiment": "Negative",
+    "score": -0.188
+  },
+  "110": {
+    "sentiment": "Positive",
+    "score": 0.7
+  },
+  "75": {
+    "sentiment": "Negative",
+    "score": -0.188
+  },
+  "84": {
+    "sentiment": "Neutral",
+    "score": -0.073
+  },
+  "102": {
+    "sentiment": "Positive",
+    "score": 0.4
+  },
+  "108": {
+    "sentiment": "Neutral",
+    "score": -0.083
+  },
+  "79": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "73": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "55": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "7": {
+    "sentiment": "Positive",
+    "score": 0.133
+  },
+  "49": {
+    "sentiment": "Neutral",
+    "score": 0.064
+  },
+  "126": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "130": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "92": {
+    "sentiment": "Positive",
+    "score": 0.303
+  },
+  "28": {
+    "sentiment": "Neutral",
+    "score": 0.094
+  },
+  "72": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "4": {
+    "sentiment": "Neutral",
+    "score": -0.062
+  },
+  "94": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "60": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "36": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "6": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "61": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "95": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "41": {
+    "sentiment": "Negative",
+    "score": -0.188
+  },
+  "80": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "0": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "44": {
+    "sentiment": "Positive",
+    "score": 0.5
+  },
+  "46": {
+    "sentiment": "Neutral",
+    "score": -0.062
+  },
+  "64": {
+    "sentiment": "Neutral",
+    "score": -0.042
+  },
+  "50": {
+    "sentiment": "Positive",
+    "score": 0.8
+  },
+  "54": {
+    "sentiment": "Neutral",
+    "score": -0.031
+  },
+  "59": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "37": {
+    "sentiment": "Neutral",
+    "score": -0.083
+  },
+  "29": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "96": {
+    "sentiment": "Negative",
+    "score": -0.144
+  },
+  "45": {
+    "sentiment": "Positive",
+    "score": 0.175
+  },
+  "39": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "43": {
+    "sentiment": "Neutral",
+    "score": -0.038
+  },
+  "51": {
+    "sentiment": "Positive",
+    "score": 0.488
+  },
+  "65": {
+    "sentiment": "Negative",
+    "score": -0.3
+  },
+  "82": {
+    "sentiment": "Positive",
+    "score": 0.104
+  },
+  "47": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "27": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "53": {
+    "sentiment": "Positive",
+    "score": 1.0
+  },
+  "18": {
+    "sentiment": "Neutral",
+    "score": 0.007
+  },
+  "34": {
+    "sentiment": "Positive",
+    "score": 0.36
+  },
+  "42": {
+    "sentiment": "Positive",
+    "score": 0.267
+  },
+  "67": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "40": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "24": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "52": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "22": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "66": {
+    "sentiment": "Neutral",
+    "score": 0.065
+  },
+  "25": {
+    "sentiment": "Neutral",
+    "score": -0.083
+  },
+  "48": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "21": {
+    "sentiment": "Neutral",
+    "score": -0.058
+  },
+  "31": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "62": {
+    "sentiment": "Neutral",
+    "score": -0.071
+  },
+  "26": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "19": {
+    "sentiment": "Positive",
+    "score": 0.25
+  },
+  "12": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "10": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "13": {
+    "sentiment": "Positive",
+    "score": 0.136
+  },
+  "32": {
+    "sentiment": "Neutral",
+    "score": 0.06
+  },
+  "5": {
+    "sentiment": "Neutral",
+    "score": -0.026
+  },
+  "35": {
+    "sentiment": "Positive",
+    "score": 0.2
+  },
+  "33": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "23": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "16": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "17": {
+    "sentiment": "Positive",
+    "score": 0.337
+  },
+  "1": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "11": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  },
+  "30": {
+    "sentiment": "Negative",
+    "score": -0.167
+  },
+  "15": {
+    "sentiment": "Neutral",
+    "score": 0.0
+  }
+}
