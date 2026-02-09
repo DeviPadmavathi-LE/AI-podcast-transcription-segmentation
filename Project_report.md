@@ -1,7 +1,5 @@
 # Automated Podcast Transcription & Topic Segmentation
 
-Infosys Springboard — AI Internship Project
-
 ---
 
 ## 1. Introduction
@@ -26,7 +24,7 @@ Dataset Used: TED Talks Audio Dataset
 
 Key Characteristics:
 
-- Approximately 2000 TED Talk audio files
+- Approximately 15 TED Talk audio files
 - Language: English
 - Audio format: MP3 (converted to WAV for processing)
 - Content type: Talks, interviews, narrative explanations
@@ -212,3 +210,91 @@ This milestone focuses on improving presentation and interpretability of previou
 - Focus was on clarity, readability, and usability
 
 This completes the Week-5 visualization and enhancement objectives.
+
+---
+
+# Milestone 3 – Week 6: System Testing and Feedback Collection
+
+## Objective
+
+The objective of Week 6 was to validate the complete Talk2Topics system developed in previous milestones. This phase focused on testing the system on multiple podcast episodes, identifying practical issues, collecting user feedback, and making minor refinements to improve output quality and usability. No new machine learning models or major architectural changes were introduced during this phase.
+
+---
+
+## Testing Setup
+
+The system was tested using multiple podcast episodes with variation in duration, topic structure, and number of speakers to evaluate robustness.
+
+---
+
+## Components Evaluated
+
+The following system components were tested:
+
+- Speech-to-text transcription accuracy
+- Topic segmentation quality
+- Summary clarity and conciseness
+- Keyword relevance
+- Sentiment classification
+- User interface behavior
+- Timestamp alignment
+
+---
+
+## Issues Faced During Testing
+
+### 1. Transcription Issues
+- Minor transcription errors occurred in the presence of background noise.
+- Proper nouns and names were occasionally misrecognized.
+- Filler words were present in some transcripts.
+
+### 2. Topic Segmentation Issues
+- Some segments were longer than ideal during extended monologues.
+- Closely related segments could have been merged in certain cases.
+- Topic boundaries were sometimes abrupt in conversational podcasts.
+
+### 3. Summary Issues
+- Initial summaries were occasionally verbose.
+- Repetition was observed in summaries for overlapping segment content.
+
+### 4. Keyword Extraction Issues
+- Some generic or less-informative keywords appeared.
+- Keyword relevance varied depending on segment length.
+
+### 5. User Interface Issues
+- Long transcript segments caused slower loading in early UI versions.
+- Segment labels initially displayed numeric identifiers instead of descriptive titles.
+
+### 6. Timestamp Alignment Issues
+- Timestamps were generally accurate but required manual verification for long episodes.
+
+---
+
+## User Feedback
+
+Feedback was collected from three external users (classmates and peers) who were not involved in system development.
+
+### Key Feedback Received
+- The interface was easy to understand and navigate.
+- Topic-based navigation reduced the need to read entire transcripts.
+- Segment summaries were useful for quick content understanding.
+- Users suggested clearer segment titles and fewer segments for long podcasts.
+
+---
+
+## Improvements Implemented
+
+Based on testing results and user feedback, the following refinements were made:
+
+- Improved segment titles using extracted keywords.
+- Trimmed summaries to 2–3 concise sentences.
+- Cleaned keyword lists by removing less informative terms.
+- Improved UI formatting and spacing for better readability.
+
+No retraining of models or changes to the core processing pipeline were performed.
+
+---
+
+## Conclusion
+
+Week 6 successfully validated the Talk2Topics system across diverse podcast formats. Testing and feedback helped identify realistic limitations related to transcription noise, segmentation granularity, and presentation clarity. Minor refinements improved usability and output quality, completing the system validation phase.

@@ -1,39 +1,81 @@
+import os
 import json
-from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
-import nltk
-EP="103"
-# Download stopwords if not done
-nltk.download('stopwords')
-from nltk.corpus import stopwords
 
-# Load clustered segments
-input_file = Path("outputs/segments_103.json")
-clusters = json.loads(input_file.read_text(encoding="utf-8"))
+# ---------------- CONFIG ----------------
+INPUT_DIR = "outputs"
+OUTPUT_DIR = "outputs"
 
-# Combine sentences into one text per cluster
-cluster_texts = []
-for cluster_id, sentences in clusters.items():
-    combined = " ".join(sentences)
-    cluster_texts.append(combined)
+PODCAST_IDS = [
+    "2695", "2716", "54715",
+    "61300", "61301", "61302",
+    "64196", "79", "83", "103"
+]
 
-# Prepare TF-IDF
+TOP_K = 6   # keywords per final topic
+# ----------------------------------------
 
-vectorizer = TfidfVectorizer(stop_words="english", max_features=10)
-X = vectorizer.fit_transform(cluster_texts)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Extract top keywords per cluster
-feature_names = vectorizer.get_feature_names_out()
-cluster_keywords = {}
 
-for idx, cluster_id in enumerate(clusters.keys()):
-    row = X[idx].toarray().flatten()
-    top_indices = row.argsort()[-10:][::-1]
-    top_words = [feature_names[i] for i in top_indices]
-    cluster_keywords[cluster_id] = top_words
+def extract_keywords_tfidf(texts, top_k=6):
+    """
+    Extract meaningful keywords using tuned TF-IDF.
+    One keyword list per topic.
+    """
 
-# Save output
-output_file = Path(f"outputs/keywords_{EP}.json")
-output_file.write_text(json.dumps(cluster_keywords, indent=2))
+    vectorizer = TfidfVectorizer(
+        stop_words="english",
+        ngram_range=(1, 2),   # words + phrases
+        max_df=0.85,          # remove very common terms
+        min_df=2,             # remove rare noise
+        sublinear_tf=True
+    )
 
-print("✔ Keyword Extraction Completed! Saved as keywords.json")
+    tfidf_matrix = vectorizer.fit_transform(texts)
+    feature_names = vectorizer.get_feature_names_out()
+
+    all_keywords = []
+
+    for row in tfidf_matrix:
+        scores = row.toarray()[0]
+        top_indices = scores.argsort()[-top_k:][::-1]
+
+        keywords = [
+            feature_names[i]
+            for i in top_indices
+            if scores[i] > 0
+        ]
+
+        all_keywords.append(keywords)
+
+    return all_keywords
+
+
+for pid in PODCAST_IDS:
+    input_path = os.path.join(INPUT_DIR, f"final_{pid}_topics.json")
+
+    if not os.path.exists(input_path):
+        print(f"❌ Missing final topics file: final_{pid}_topics.json")
+        continue
+
+    with open(input_path, "r", encoding="utf-8") as f:
+        final_topics = json.load(f)
+
+    print(f"🔹 Extracting TF-IDF keywords for FINAL topics of podcast {pid}")
+
+    topic_texts = [topic["text"] for topic in final_topics]
+    keyword_lists = extract_keywords_tfidf(topic_texts, TOP_K)
+
+    output = {
+        str(topic["segment_id"]): keywords
+        for topic, keywords in zip(final_topics, keyword_lists)
+    }
+
+    output_path = os.path.join(OUTPUT_DIR, f"final_keywords_{pid}.json")
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(output, f, indent=2, ensure_ascii=False)
+
+    print(f"✅ Saved → {output_path}")
+
+print("🎉 TF-IDF keyword extraction for FINAL topics completed.")
