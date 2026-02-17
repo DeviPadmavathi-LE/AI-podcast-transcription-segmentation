@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 
 =======
+
 # Talk2Topics
 
 ### AI-Powered Podcast Transcription & Topic Segmentation System
@@ -48,7 +49,8 @@ This system improves accessibility, reduces listening time, and enables fast inf
 ## System Architecture
 
 ```
-![System Architecture](Infosys_Springboard/assets/architecture.png)
+![System Architecture](./assets/architecture.png)
+
 ```
 
 Pipeline Flow:
@@ -208,4 +210,5 @@ Talk2Topics demonstrates how speech recognition and NLP can transform long audio
 The clustering-based segmentation method provided the most meaningful results and enabled high-quality summaries, validating the effectiveness of embedding-driven semantic analysis.
 
 ---
->>>>>>> 28aaa6f (Documentation)
+
+> > > > > > > 28aaa6f (Documentation)
