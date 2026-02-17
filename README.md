@@ -48,7 +48,7 @@ This system improves accessibility, reduces listening time, and enables fast inf
 ## System Architecture
 
 ```
-![System Architecture](assets/architecture.png)
+![System Architecture](Infosys_Springboard/assets/architecture.png)
 ```
 
 Pipeline Flow:
