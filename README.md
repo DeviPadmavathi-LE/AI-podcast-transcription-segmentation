@@ -56,38 +56,38 @@ This system improves accessibility, reduces listening time, and enables fast inf
 
 ![System Architecture](assets/architecture.png)
 
-## System Pipeline Explanation
+### System Pipeline Explanation
 
-### Audio Input
+#### Audio Input
 The system accepts raw podcast audio files and prepares them for processing.
 
-### Audio Preprocessing
+#### Audio Preprocessing
 Audio is cleaned, normalized, converted to mono if required, and divided into chunks to improve transcription performance.
 
-### Speech-to-Text Transcription
+#### Speech-to-Text Transcription
 The processed audio is converted into text using a speech recognition model that generates timestamped transcripts.
 
-### Sentence Splitting
+#### Sentence Splitting
 The transcript is divided into individual sentences to enable detailed semantic analysis.
 
-### Topic Segmentation
+#### Topic Segmentation
 Sentences are grouped into coherent topic segments using semantic similarity techniques.
 
-### Keyword Extraction
+#### Keyword Extraction
 Important keywords are extracted from each segment to represent its core idea.
 
-### Summarization
+#### Summarization
 Each segment is summarized to provide a concise understanding of the discussion.
 
-### Sentiment Analysis
+#### Sentiment Analysis
 The emotional tone of each segment is analyzed to provide contextual insights.
 
-### Structured Output
-All results are organized into a structured format for easy reading, searching, and navigation.a
+#### Structured Output
+All results are organized into a structured format for easy reading, searching, and navigation.
 
 ---
 
-## Tools & Technologies Used
+### Tools & Technologies Used
 
 **Audio Processing**
 
@@ -111,40 +111,9 @@ All results are organized into a structured format for easy reading, searching, 
 
 ---
 
-## System Pipeline Explanation
-
-### Audio Input
-The system accepts raw podcast audio files and prepares them for processing.
-
-### Audio Preprocessing
-Audio is cleaned, normalized, converted to mono if required, and divided into chunks to improve transcription performance.
-
-### Speech-to-Text Transcription
-The processed audio is converted into text using a speech recognition model that generates timestamped transcripts.
-
-### Sentence Splitting
-The transcript is divided into individual sentences to enable detailed semantic analysis.
-
-### Topic Segmentation
-Sentences are grouped into coherent topic segments using semantic similarity techniques.
-
-### Keyword Extraction
-Important keywords are extracted from each segment to represent its core idea.
-
-### Summarization
-Each segment is summarized to provide a concise understanding of the discussion.
-
-### Sentiment Analysis
-The emotional tone of each segment is analyzed to provide contextual insights.
-
-### Structured Output
-All results are organized into a structured format for easy reading, searching, and navigation.
-
 ### Implementation Details
 
 This section describes the methodology used to implement each major component of the system pipeline.
-
----
 
 #### 1. Transcription
 Audio files were transcribed using a speech recognition model capable of generating timestamp-aligned text. Before transcription, audio was preprocessed through format conversion, normalization, mono conversion, silence trimming, and chunking. Chunking ensured long recordings could be processed efficiently while maintaining accuracy. The output consisted of text segments mapped to exact timestamps, enabling later navigation and alignment features.
@@ -163,7 +132,7 @@ After transcription, the text was divided into sentences and transformed into se
 | Segment Quality | Fragmented | Meaningful |
 | Summary Alignment | Inconsistent | Accurate |
 
-**Final Choice:** Clustering-based segmentation  
+**Final Choice:** Clustering-based segmentation 
 **Reason:** Produced clearer topic boundaries and better summaries.
 
 ---
@@ -178,7 +147,7 @@ Each topic segment was analyzed using a sentiment classification model. The mode
 
 ---
 
-#### Interactive Timeline & Keyword Cloud
+#### 5. Interactive Timeline & Keyword Cloud
 Structured outputs from earlier stages were used to build user-facing navigation features:
 
 - **Interactive Timeline:** Uses timestamps from transcription and segmentation to allow direct navigation to specific topics.
@@ -193,7 +162,7 @@ Similarity-based segmentation can detect subtle topic shifts but tends to over-s
 
 ---
 
-## Generated Outputs
+### Generated Outputs
 
 For each podcast the system produces:
 
@@ -207,7 +176,7 @@ These outputs enable topic-wise browsing instead of linear listening.
 
 ---
 
-## Testing Evaluation
+### Testing Evaluation
 
 The system was tested on multiple podcast types:
 
@@ -226,7 +195,7 @@ The system was tested on multiple podcast types:
 
 ---
 
-## Testing Log Summary
+### Testing Log Summary
 
 | Podcast          | Issue                      | Fix Applied                   |
 | ---------------- | -------------------------- | ----------------------------- |
@@ -235,56 +204,7 @@ The system was tested on multiple podcast types:
 | Noisy audio      | Minor transcription errors | Audio normalization           |
 
 ---
-
-### Implementation Details
-
-This section describes the methodology used to implement each major component of the system pipeline.
-
----
-
-#### 1. Transcription
-Audio files were transcribed using a speech recognition model capable of generating timestamp-aligned text. Before transcription, audio was preprocessed through format conversion, normalization, mono conversion, silence trimming, and chunking. Chunking ensured long recordings could be processed efficiently while maintaining accuracy. The output consisted of text segments mapped to exact timestamps, enabling later navigation and alignment features.
-
----
-
-#### 2. Topic Segmentation
-After transcription, the text was divided into sentences and transformed into semantic embeddings. Two segmentation strategies were explored:
-
-| Feature | Similarity-Based Method | Clustering-Based Method |
-|--------|--------------------------|---------------------------|
-| Detection Style | Sentence-to-sentence comparison | Global semantic grouping |
-| Topic Coherence | Medium | High |
-| Boundary Stability | Sensitive | Stable |
-| Noise Handling | Weak | Strong |
-| Segment Quality | Fragmented | Meaningful |
-| Summary Alignment | Inconsistent | Accurate |
-
-The clustering-based approach was chosen because it produced clearer topic boundaries and more logically grouped discussions.
-
----
-
-#### 3. Summarization
-Summaries were generated at the topic-segment level instead of summarizing the entire transcript at once. This approach preserves contextual meaning and ensures each summary corresponds to a specific discussion. The summarization model condenses segment text while retaining key information, making it easier for users to scan content quickly.
-
----
-
-#### 4. Sentiment Analysis
-Each topic segment was analyzed using a sentiment classification model. The model evaluates linguistic patterns to determine whether the tone of a segment is positive, negative, or neutral. Performing sentiment analysis per segment rather than per transcript provides finer insights into emotional variations across the podcast.
-
----
-
-#### 5. Interactive Timeline & Keyword Cloud
-Structured outputs from earlier stages were used to build user-facing navigation features:
-
-- **Interactive Timeline:** Uses timestamps from transcription and segmentation to allow direct navigation to specific topics.
-- **Keyword Cloud:** Keywords extracted from each segment are aggregated and displayed visually to highlight dominant themes.
-
-These components transform raw transcript data into an intuitive exploration interface, enabling fast information retrieval without listening to the full podcast.
-
----
-
-
-### User Testing Notes
+### User Feedback
 
 **User 1 – Non-technical**
 - Understood interface quickly
@@ -311,125 +231,21 @@ These components transform raw transcript data into an intuitive exploration int
 
 ---
 
-## Future Scope
+### Limitations
 
-- Add speaker diarization to distinguish multiple speakers within a podcast
-- Improve topic segmentation using adaptive or hierarchical clustering methods
-- Enhance summary quality using larger context-aware language models
-- Implement automatic topic title generation for clearer segment labels
-- Add confidence scores for transcripts, summaries, and sentiment predictions
-- Build advanced analytics dashboards for deeper content insights
-- Optimize processing speed for long-duration audio files
-- Support distributed processing for large podcast collections
-- Provide API endpoints for external application integration
-- Improve robustness for noisy audio and overlapping speech
+While the system performs well for structured podcast understanding, a few practical limitations were observed:
 
----## System Pipeline Explanation
+- **Speech Recognition Sensitivity** — Transcription accuracy may drop in noisy recordings, overlapping speech, or strong accents.
+- **Segmentation Granularity Trade-off** — Very fine segmentation can fragment topics, while broader segmentation may merge closely related discussions.
+- **Model Dependency** — Output quality depends on pretrained models; performance may vary across domains or speaking styles.
+- **Keyword Noise** — Occasionally generic words appear among extracted keywords despite filtering.
+- **Sentiment Simplicity** — Sentiment analysis is polarity-based and may not capture nuanced tone such as sarcasm or mixed emotions.
+- **Processing Time for Long Audio** — Longer podcasts require chunking and sequential processing, which increases runtime.
 
-### Audio Input
-The system accepts raw podcast audio files and prepares them for processing.
-
-### Audio Preprocessing
-Audio is cleaned, normalized, converted to mono if required, and divided into chunks to improve transcription performance.
-
-### Speech-to-Text Transcription
-The processed audio is converted into text using a speech recognition model that generates timestamped transcripts.
-
-### Sentence Splitting
-The transcript is divided into individual sentences to enable detailed semantic analysis.
-
-### Topic Segmentation
-Sentences are grouped into coherent topic segments using semantic similarity techniques.
-
-### Keyword Extraction
-Important keywords are extracted from each segment to represent its core idea.
-
-### Summarization
-Each segment is summarized to provide a concise understanding of the discussion.
-
-### Sentiment Analysis
-The emotional tone of each segment is analyzed to provide contextual insights.
-
-### Structured Output
-All results are organized into a structured format for easy reading, searching, and navigation.
-
-### Implementation Details
-
-This section describes the methodology used to implement each major component of the system pipeline.
-
+These limitations are typical for automated audio understanding systems and highlight opportunities for further refinement and optimization.
 ---
 
-#### 1. Transcription
-Audio files were transcribed using a speech recognition model capable of generating timestamp-aligned text. Before transcription, audio was preprocessed through format conversion, normalization, mono conversion, silence trimming, and chunking. Chunking ensured long recordings could be processed efficiently while maintaining accuracy. The output consisted of text segments mapped to exact timestamps, enabling later navigation and alignment features.
-
----
-
-#### 2. Topic Segmentation
-After transcription, the text was divided into sentences and transformed into semantic embeddings. Two segmentation strategies were explored:
-
-| Feature | Similarity-Based Method | Clustering-Based Method |
-|--------|--------------------------|---------------------------|
-| Detection Style | Sentence-to-sentence comparison | Global semantic grouping |
-| Topic Coherence | Medium | High |
-| Boundary Stability | Sensitive | Stable |
-| Noise Handling | Weak | Strong |
-| Segment Quality | Fragmented | Meaningful |
-| Summary Alignment | Inconsistent | Accurate |
-| Final Decision | Not Selected | **Selected** |
-
-The clustering-based approach was chosen because it produced clearer topic boundaries and more logically grouped discussions.
-
----
-
-#### 3. Summarization
-Summaries were generated at the topic-segment level instead of summarizing the entire transcript at once. This approach preserves contextual meaning and ensures each summary corresponds to a specific discussion. The summarization model condenses segment text while retaining key information, making it easier for users to scan content quickly.
-
----
-
-#### 4. Sentiment Analysis
-Each topic segment was analyzed using a sentiment classification model. The model evaluates linguistic patterns to determine whether the tone of a segment is positive, negative, or neutral. Performing sentiment analysis per segment rather than per transcript provides finer insights into emotional variations across the podcast.
-
----
-
-#### 5. Interactive Timeline & Keyword Cloud
-Structured outputs from earlier stages were used to build user-facing navigation features:
-
-- **Interactive Timeline:** Uses timestamps from transcription and segmentation to allow direct navigation to specific topics.
-- **Keyword Cloud:** Keywords extracted from each segment are aggregated and displayed visually to highlight dominant themes.
-
-These components transform raw transcript data into an intuitive exploration interface, enabling fast information retrieval without listening to the full podcast.
-
----
-
-#### Implementation Insight
-Similarity-based segmentation can detect subtle topic shifts but tends to over-segment content. Clustering-based segmentation, in contrast, produces more meaningful topic groupings and stronger summaries. Based on these observations, clustering was selected as the final segmentation strategy.
-
-### User Testing Notes
-
-**User 1 – Non-technical**
-- Understood interface quickly
-- Used summaries to decide which part to read
-- Felt transcript text was long but acceptable
-
-**User 2 – Basic technical background**
-- Navigation between segments was easy
-- Liked summary before transcript
-- Said sentiment labels were not very noticeable
-
-**User 3 – First-time user**
-- System felt simple to use
-- Summaries matched content well
-- Suggested slightly shorter summaries
-
----
-
-### Improvements Implemented
-- Reduced number of segments
-- Shortened summaries
-- Improved keyword highlighting
-- Increased spacing between sections
-
-## Future Scope
+### Future Scope
 
 - Add speaker diarization to distinguish multiple speakers within a podcast
 - Improve topic segmentation using adaptive or hierarchical clustering methods
