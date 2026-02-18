@@ -12,7 +12,7 @@ It automatically detects topics, extracts keywords, generates summaries, and ena
 ### Problem Statement
 Long podcasts contain valuable information but are difficult to search, skim, or navigate. Users often need to listen to entire episodes to find specific discussions.
 
----
+
 
 ### Objectives
 - Convert audio podcasts into structured text  
@@ -21,7 +21,7 @@ Long podcasts contain valuable information but are difficult to search, skim, or
 - Extract meaningful keywords  
 - Provide an interactive navigation interface  
 
----
+
 
 ### Significance
 Long-form audio content is rapidly growing, but most platforms still treat podcasts as linear media that must be consumed sequentially. This project demonstrates how artificial intelligence can transform passive audio into structured, searchable knowledge.
@@ -35,8 +35,6 @@ The system can be applied across multiple real-world domains:
 - Research — quick extraction of relevant discussions  
 - Media Analysis — topic tracking and content indexing  
 - Knowledge Management — searchable spoken archives
-
-
 
 ---
 
@@ -124,7 +122,6 @@ This section describes the methodology used to implement each major component of
 ### 1. Transcription
 Audio files were transcribed using a speech recognition model capable of generating timestamp-aligned text. Before transcription, audio was preprocessed through format conversion, normalization, mono conversion, silence trimming, and chunking. Chunking ensured long recordings could be processed efficiently while maintaining accuracy. The output consisted of text segments mapped to exact timestamps, enabling later navigation and alignment features.
 
----
 
 ### 2. Topic Segmentation
 After transcription, the text was divided into sentences and transformed into semantic embeddings. Two segmentation strategies were explored:
@@ -141,17 +138,14 @@ After transcription, the text was divided into sentences and transformed into se
 **Final Choice:** Clustering-based segmentation 
 **Reason:** Produced clearer topic boundaries and better summaries.
 
----
 
 ### 3. Summarization
 Summaries were generated at the topic-segment level instead of summarizing the entire transcript at once. This approach preserves contextual meaning and ensures each summary corresponds to a specific discussion. The summarization model condenses segment text while retaining key information, making it easier for users to scan content quickly.
 
----
 
 ### 4. Sentiment Analysis
 Each topic segment was analyzed using a sentiment classification model. The model evaluates linguistic patterns to determine whether the tone of a segment is positive, negative, or neutral. Performing sentiment analysis per segment rather than per transcript provides finer insights into emotional variations across the podcast.
 
----
 
 ### 5. Interactive Timeline & Keyword Cloud
 Structured outputs from earlier stages were used to build user-facing navigation features:
@@ -161,7 +155,6 @@ Structured outputs from earlier stages were used to build user-facing navigation
 
 These components transform raw transcript data into an intuitive exploration interface, enabling fast information retrieval without listening to the full podcast.
 
----
 
 ### Implementation Insight
 Similarity-based segmentation can detect subtle topic shifts but tends to over-segment content. Clustering-based segmentation, in contrast, produces more meaningful topic groupings and stronger summaries. Based on these observations, clustering was selected as the final segmentation strategy.
@@ -226,8 +219,6 @@ The system was tested on multiple podcast types:
 - System felt simple to use
 - Summaries matched content well
 - Suggested slightly shorter summaries
-
----
 
 ### Improvements Implemented
 - Reduced number of segments
