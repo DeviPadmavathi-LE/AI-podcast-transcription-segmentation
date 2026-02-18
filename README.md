@@ -60,6 +60,7 @@ The system can be applied across multiple real-world domains:
 
 ![System Architecture](assets/architecture.png)
 
+
 ### System Pipeline Explanation
 
 #### Audio Input
