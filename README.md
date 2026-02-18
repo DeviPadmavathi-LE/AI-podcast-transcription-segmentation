@@ -1,4 +1,4 @@
-# Talk2Topics
+ # Talk2Topics
 
 ### AI-Powered Podcast Transcription & Topic Segmentation System
 
@@ -137,8 +137,8 @@ After transcription, the text was divided into sentences and transformed into se
 | Segment Quality | Fragmented | Meaningful |
 | Summary Alignment | Inconsistent | Accurate |
 
-**Final Choice:** Clustering-based segmentation.
-**Reason:** Produced clearer topic boundaries and better summaries.
+**Final Choice:**  Clustering-based segmentation.
+**Reason:**  Produced clearer topic boundaries and better summaries.
 
 
 ### 3. Summarization
