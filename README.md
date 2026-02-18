@@ -137,7 +137,7 @@ After transcription, the text was divided into sentences and transformed into se
 | Segment Quality | Fragmented | Meaningful |
 | Summary Alignment | Inconsistent | Accurate |
 
-**Final Choice:** Clustering-based segmentation 
+**Final Choice:** Clustering-based segmentation.
 **Reason:** Produced clearer topic boundaries and better summaries.
 
 
