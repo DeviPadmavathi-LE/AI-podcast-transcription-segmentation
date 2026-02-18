@@ -195,8 +195,6 @@ The system was tested on multiple podcast types:
 - UI usability
 - Timestamp alignment
 
----
-
 ### Testing Log Summary
 
 | Podcast          | Issue                      | Fix Applied                   |
