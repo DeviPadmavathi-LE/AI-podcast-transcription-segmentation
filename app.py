@@ -1,136 +1,175 @@
 import streamlit as st
 import json
-from pathlib import Path
+import os
+import re
 
-# ---------------- PAGE CONFIG ----------------
-st.set_page_config(
-    page_title="Podcast Topic Explorer",
-    page_icon="🎙️",
-    layout="wide"
-)
+# ---------------- CONFIG ----------------
+DATA_PATH = "outputs"   # folder containing JSON files
 
-# ---------------- PATHS ----------------
-BASE = Path("outputs")
-TRANSCRIPTS = Path("transcripts")
-AUDIO = Path("audio")
+st.set_page_config(page_title="Podcast Topic Explorer", layout="wide")
 
-PODCASTS = {
-    "79": "Iqbal Kadir — How to End Poverty for Good",
-    "83": "E.O. Wilson — What Makes Life Worth Living",
-    "103": "Evelyn Glennie — How We Truly Listen to Music",
+# ---------------- DARK THEME STYLE ----------------
+st.markdown("""
+<style>
+html, body, [class*="css"] {
+    background-color: #0e1117;
+    color: white;
 }
+.title{
+    font-size:40px;
+    font-weight:700;
+}
+.subtitle{
+    font-size:18px;
+    color:#9aa4b2;
+    margin-bottom:30px;
+}
+.card{
+    background:#161b22;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+.segment-title{
+    font-size:20px;
+    font-weight:600;
+    color:#58a6ff;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------- HELPERS ----------------
 def load_json(path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-def clean_title(text):
-    return text.replace('"', "").split(".")[0].strip()
+
+def extract_ids():
+    ids = []
+    for file in os.listdir(DATA_PATH):
+        m = re.search(r"_(\d+)\.json", file)
+        if m:
+            ids.append(m.group(1))
+    return sorted(list(set(ids)))
+
+
+# -------- AUTO PODCAST TITLE FROM CONTENT --------
+def generate_title(pid):
+    summaries = load_json(f"{DATA_PATH}/final_summaries_{pid}.json")
+    keywords = load_json(f"{DATA_PATH}/final_keywords_{pid}.json")
+
+    text = ""
+
+    if isinstance(summaries, dict) and summaries:
+        text += " ".join(list(summaries.values())[:2])
+
+    if isinstance(keywords, dict) and keywords:
+        first = list(keywords.values())[0]
+        if isinstance(first, list):
+            text += " " + " ".join(first[:5])
+
+    words = [w.capitalize() for w in text.split() if len(w) > 4][:6]
+
+    if not words:
+        return f"Talk {pid}"
+
+    return " ".join(words)
+
+
+# -------- SEGMENT TITLE FROM TEXT --------
+def segment_title(text):
+    words = [w.capitalize() for w in text.split() if len(w) > 4][:4]
+    if not words:
+        return "Segment"
+    return " ".join(words)
+
 
 # ---------------- HEADER ----------------
-st.markdown(
-    """
-    <h1 style='text-align:center;'>🎙️ Podcast Topic Explorer</h1>
-    <p style='text-align:center;color:gray;'>
-    Understand long talks through clear topic segmentation
-    </p>
-    <hr>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown('<div class="title">🎧 Podcast Topic Explorer</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI-Powered Podcast Transcription & Topic Segmentation</div>', unsafe_allow_html=True)
 
-# ---------------- SIDEBAR (NAVIGATION) ----------------
-st.sidebar.header("Navigation")
+# ---------------- SIDEBAR ----------------
+ids = extract_ids()
+title_map = {generate_title(pid): pid for pid in ids}
 
-talk_id = st.sidebar.selectbox(
-    "Choose a Talk",
-    list(PODCASTS.keys()),
-    format_func=lambda x: PODCASTS[x]
-)
+selected_title = st.sidebar.selectbox("Choose a Talk", list(title_map.keys()))
+pid = title_map[selected_title]
 
-search_query = st.sidebar.text_input("Search (keywords / summary / transcript)")
+search_query = st.sidebar.text_input("🔎 Search inside podcast")
 
-# ---------------- LOAD DATA ----------------
-topics = load_json(BASE / f"final_{talk_id}_topics.json")
-sentences = load_json(BASE / f"sentences_{talk_id}.json")
-timestamps = load_json(BASE / f"timestamps_{talk_id}.json")
+# ---------------- LOAD FILES ----------------
+segments = load_json(f"{DATA_PATH}/segments_{pid}.json")
+summaries = load_json(f"{DATA_PATH}/final_summaries_{pid}.json")
+keywords = load_json(f"{DATA_PATH}/final_keywords_{pid}.json")
+sentiments = load_json(f"{DATA_PATH}/final_sentiment_{pid}.json")
 
-full_transcript = (TRANSCRIPTS / f"{talk_id}.txt").read_text(encoding="utf-8")
+# ---------------- SEGMENT SELECTOR ----------------
+st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# ---------------- SEGMENT SELECT ----------------
-# -------- SEGMENT SELECT (CORRECT ORDER + REAL IDS) --------
-segment_labels = []
+if isinstance(segments, list):
+    seg_ids = list(range(len(segments)))
+else:
+    seg_ids = list(segments.keys())
 
-sorted_items = sorted(topics.items(), key=lambda x: int(x[0]))
+selected_segment = st.selectbox("Select Segment", seg_ids)
 
-for idx, seg in sorted_items:
-    label = f"Segment {idx}: {clean_title(seg['summary'])}"
-    segment_labels.append(label)
+# ---------------- GET SEGMENT DATA ----------------
+if isinstance(segments, list):
+    seg = segments[int(selected_segment)]
+    text = seg["text"]
+else:
+    seg = segments[selected_segment]
+    text = seg
 
-selected_label = st.sidebar.selectbox(
-    "Choose a Segment",
-    segment_labels
-)
+title = segment_title(text)
 
-segment_index = selected_label.split(":")[0].replace("Segment", "").strip()
-segment = topics[segment_index]
+# ---------------- DISPLAY SEGMENT ----------------
+st.markdown(f'<div class="segment-title">{title}</div>', unsafe_allow_html=True)
 
-# ---------------- MAIN VIEW ----------------
-st.markdown(f"## {clean_title(segment['summary'])}")
-
-# ---------------- KEYWORDS ----------------
-if segment.get("keywords"):
-    st.markdown(
-        "**Keywords:** " + ", ".join(segment["keywords"])
+# search highlight
+if search_query:
+    text = re.sub(
+        f"({search_query})",
+        r"<mark style='background:#facc15;color:black'>\1</mark>",
+        text,
+        flags=re.IGNORECASE,
     )
+
+st.markdown(text, unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------- SUMMARY ----------------
-summary_text = segment["summary"]
-if len(summary_text.split()) < 25:
-    summary_text += (
-        " This segment explains the idea in more detail and "
-        "connects it with the broader theme of the talk."
-    )
+if summaries:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Summary")
+    val = summaries[str(selected_segment)] if isinstance(summaries, dict) else summaries[int(selected_segment)]
+    st.write(val)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("### Summary")
-st.write(summary_text)
+# ---------------- KEYWORDS ----------------
+if keywords:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Keywords")
 
-# ---------------- TRANSCRIPT (FIXED) ----------------
-st.markdown("### Transcript")
+    kws = keywords[str(selected_segment)] if isinstance(keywords, dict) else keywords[int(selected_segment)]
 
-start_idx = segment.get("start_sentence", 0)
-end_idx = segment.get("end_sentence", start_idx + 10)
+    cols = st.columns(len(kws))
+    for i, k in enumerate(kws):
+        cols[i].button(k)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-segment_sentences = sentences[start_idx:end_idx]
-segment_text = " ".join(segment_sentences)
+# ---------------- SENTIMENT ----------------
+if sentiments:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.subheader("Sentiment")
 
-# SEARCH FILTER
-if search_query:
-    if search_query.lower() in segment_text.lower():
-        st.text_area(
-            "Segment Transcript",
-            segment_text,
-            height=280
-        )
-    else:
-        st.info("Search term not found in this segment.")
-else:
-    st.text_area(
-        "Segment Transcript",
-        segment_text,
-        height=280
-    )
+    s = sentiments[str(selected_segment)] if isinstance(sentiments, dict) else sentiments[int(selected_segment)]
 
-# ---------------- AUDIO JUMP ----------------
-audio_file = AUDIO / f"{talk_id}.wav"
-if audio_file.exists():
-    start_time = timestamps.get(str(segment_index), {}).get("start", 0)
-    st.markdown("### Audio")
-    st.audio(str(audio_file), start_time=int(start_time))
+    label = s["label"] if isinstance(s, dict) else s
+    score = s.get("score", 0.5) if isinstance(s, dict) else 0.5
 
-# ---------------- FULL TRANSCRIPT SEARCH ----------------
-with st.expander("🔍 Search in Full Transcript"):
-    q = st.text_input("Search full transcript")
-    if q:
-        matches = [line for line in full_transcript.split("\n") if q.lower() in line.lower()]
-        st.write("\n".join(matches[:20]) if matches else "No matches found.")
+    st.progress(float(score))
+    st.write(label)
+    st.markdown("</div>", unsafe_allow_html=True)
