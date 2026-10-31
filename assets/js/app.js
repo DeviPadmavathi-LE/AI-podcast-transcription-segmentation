@@ -386,90 +386,54 @@ const app = {
 
     renderRomanizationView() {
         this.routeContent.innerHTML = Components.RomanizationView();
-        const input = document.getElementById('rom-input');
-        const result = document.getElementById('rom-result');
-        if (!input || !result) return;
+        const data = API.getCurrentData() || {};
 
-        const performRomanization = async (text, script = 'auto') => {
-            if (!text || !text.trim()) {
-                result.textContent = 'Type or paste Indic script text to romanize...';
-                return;
-            }
-            result.textContent = 'Romanizing via Aksharamukha...';
+        // 1. Populate original English podcast transcript on the left
+        const originalText = (data.transcript || []).map(s => s.text || '').join('\n\n');
+        const origEl = document.getElementById('rom-orig');
+        if (origEl) {
+            origEl.textContent = originalText || 'No podcast transcript loaded. Upload a podcast to begin.';
+        }
+
+        const select = document.getElementById('rom-lang-select');
+        const result = document.getElementById('rom-result');
+        if (!select || !result) return;
+
+        const langNames = {
+            'te': 'Telugu (Tanglish)',
+            'hi': 'Hindi (Hinglish)',
+            'kn': 'Kannada (Kanglish)',
+            'ta': 'Tamil (Tanglish)',
+            'ml': 'Malayalam',
+            'gu': 'Gujarati',
+            'bn': 'Bengali'
+        };
+
+        const updateRomanization = async (targetLang) => {
+            const words = (originalText || 'Hey guys, welcome to the podcast and today we talk about open source.').split(' ');
+            const chunk = words.slice(0, 450).join(' ') + (words.length > 450 ? '...' : '');
+
+            result.textContent = `Explaining podcast in ${langNames[targetLang] || targetLang} (English letters)...`;
+
             try {
-                const rom = await API.romanize(text, script);
-                result.textContent = rom;
+                const res = await API.explainRomanized(chunk, targetLang);
+                if (result) {
+                    result.textContent = res.romanized || 'No romanization produced.';
+                }
             } catch (err) {
-                result.textContent = `Romanization failed: ${err.message}`;
+                if (result) {
+                    result.textContent = `Romanization failed: ${err.message}`;
+                }
             }
         };
 
-        // 1. Auto-populate if user previously translated podcast into Indic script
-        if (this.lastTranslatedText && /[\u0900-\u0D7F]/.test(this.lastTranslatedText)) {
-            input.value = this.lastTranslatedText;
-            performRomanization(this.lastTranslatedText);
-        } else {
-            // Auto-load Telugu translation of podcast sample so page is never empty!
-            const sampleIndic = "హే అబ్బాయిలు, నా పేరు ఆది ఒజ్మానీ మరియు ఈ రోజు మనం ఓపెన్ సోర్స్‌లో మీరు ఎలా పాల్గొనవచ్చు అనే దాని గురించి మాట్లాడబోతున్నాము.";
-            input.value = sampleIndic;
-            performRomanization(sampleIndic, 'Telugu');
-        }
+        // Auto-run for default selected language (Telugu) on view load
+        const initialLang = select.value || 'te';
+        updateRomanization(initialLang);
 
-        // Quick-load buttons
-        const btnTelugu = document.getElementById('btn-rom-telugu');
-        if (btnTelugu) {
-            btnTelugu.addEventListener('click', async () => {
-                const data = API.getCurrentData();
-                const english = (data.transcript || []).slice(0, 10).map(s => s.text).join(' ');
-                input.value = 'Translating podcast to Telugu...';
-                result.textContent = 'Translating...';
-                try {
-                    const translated = await API.translateText(english || 'Hello and welcome to open source', 'te');
-                    input.value = translated;
-                    this.lastTranslatedText = translated;
-                    performRomanization(translated, 'Telugu');
-                } catch (e) {
-                    input.value = 'హలో మరియు ఓపెన్ సోర్స్‌కు స్వాగతం.';
-                    performRomanization(input.value, 'Telugu');
-                }
-            });
-        }
-
-        const btnHindi = document.getElementById('btn-rom-hindi');
-        if (btnHindi) {
-            btnHindi.addEventListener('click', async () => {
-                const data = API.getCurrentData();
-                const english = (data.transcript || []).slice(0, 10).map(s => s.text).join(' ');
-                input.value = 'Translating podcast to Hindi...';
-                result.textContent = 'Translating...';
-                try {
-                    const translated = await API.translateText(english || 'Hello and welcome to open source', 'hi');
-                    input.value = translated;
-                    this.lastTranslatedText = translated;
-                    performRomanization(translated, 'Devanagari');
-                } catch (e) {
-                    input.value = 'नमस्ते और ओपन सोर्स में आपका स्वागत है।';
-                    performRomanization(input.value, 'Devanagari');
-                }
-            });
-        }
-
-        const btnSample = document.getElementById('btn-rom-sample');
-        if (btnSample) {
-            btnSample.addEventListener('click', () => {
-                const sample = "భారతదేశం నా మాతృభూమి. భారతీయులందరూ నా సహోదరులు.";
-                input.value = sample;
-                performRomanization(sample, 'Telugu');
-            });
-        }
-
-        // Live typing debounced
-        let debounceTimer;
-        input.addEventListener('input', (e) => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                performRomanization(e.target.value.trim());
-            }, 300);
+        // When user changes dropdown language (Hindi, Kannada, Tamil, etc.)
+        select.addEventListener('change', (e) => {
+            updateRomanization(e.target.value);
         });
     },
 

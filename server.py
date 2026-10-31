@@ -330,6 +330,44 @@ def romanize_endpoint():
         return jsonify({"error": f"Romanization failed: {str(e)}"}), 500
 
 
+@app.route('/explain_romanized', methods=['POST'])
+def explain_romanized_endpoint():
+    """
+    Translates English podcast text to an Indic language,
+    and transliterates it into English phonetic letters (Tanglish, Hinglish, etc.).
+    Body: { text: str, language: str }
+    """
+    data = request.get_json(silent=True) or {}
+    text = data.get('text', '').strip()
+    lang = data.get('language', 'te').lower().strip()
+
+    if not text:
+        return jsonify({"error": "No text provided."}), 400
+
+    log.info(f"Explain Romanized: {len(text)} chars to '{lang}' (English letters)...")
+
+    try:
+        from pipeline.translation import run_translation
+        from pipeline.romanization import run_romanization
+
+        # 1. Translate English into Indic script
+        indic_text = run_translation(text, target_code=lang)
+
+        # 2. Transliterate Indic script into English phonetic letters (Tanglish, Hinglish, etc.)
+        romanized = run_romanization(indic_text, source_script="auto", lang=lang)
+
+        return jsonify({
+            "original": text,
+            "indic_script": indic_text,
+            "romanized": romanized,
+            "language": lang
+        }), 200
+    except Exception as e:
+        log.error(f"Explain Romanized failed: {e}")
+        traceback.print_exc()
+        return jsonify({"error": f"Failed: {str(e)}"}), 500
+
+
 @app.route('/library', methods=['GET'])
 def library_endpoint():
     """

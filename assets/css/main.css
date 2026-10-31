@@ -22,10 +22,10 @@ html[data-theme="light"] {
     --bg-elevated: #E5DFD5;
     --bg-hover: #ECE5DA;
 
-    /* Typography Colors */
-    --text-primary: #1A0B10;         /* Deep rich espresso-burgundy ink */
-    --text-secondary: #5E4650;       /* Muted plum-taupe */
-    --text-tertiary: #8E7580;        /* Dusty rose-gray */
+    /* Typography Colors (High-Contrast, Crisp Editorial Readability) */
+    --text-primary: #0D0407;         /* Maximum clarity ink espresso */
+    --text-secondary: #2D1C24;       /* Rich, high-contrast dark plum-taupe */
+    --text-tertiary: #52404A;        /* Deep readable taupe (never washed out) */
 
     /* Brand Accents: Imperial Burgundy */
     --brand-primary: #78182E;        /* Signature Deep Burgundy */
@@ -38,21 +38,21 @@ html[data-theme="light"] {
     --gradient-brand: linear-gradient(135deg, #78182E, #A32845);
 
     /* Borders & Outlines */
-    --border-color: rgba(120, 24, 46, 0.12);
-    --border-strong: rgba(120, 24, 46, 0.28);
-    --border-subtle: rgba(120, 24, 46, 0.08);
+    --border-color: rgba(120, 24, 46, 0.16);
+    --border-strong: rgba(120, 24, 46, 0.35);
+    --border-subtle: rgba(120, 24, 46, 0.10);
 
     /* Badges & Shadows */
     --tag-bg: #F7EAEF;
     --tag-text: #78182E;
-    --shadow-sm: 0 1px 3px rgba(120, 24, 46, 0.04);
-    --shadow-md: 0 4px 12px rgba(120, 24, 46, 0.06);
-    --shadow-lg: 0 12px 28px rgba(120, 24, 46, 0.08);
-    --shadow-glass: 0 8px 32px rgba(120, 24, 46, 0.05);
+    --shadow-sm: 0 1px 3px rgba(120, 24, 46, 0.05);
+    --shadow-md: 0 4px 12px rgba(120, 24, 46, 0.08);
+    --shadow-lg: 0 12px 28px rgba(120, 24, 46, 0.10);
+    --shadow-glass: 0 8px 32px rgba(120, 24, 46, 0.06);
 
     /* Mascot Elements */
     --robot-body: #EFEAE1;
-    --robot-face: #1A0B10;
+    --robot-face: #0D0407;
     --robot-eye: #78182E;
     --robot-accent: #A32845;
 }
@@ -63,45 +63,45 @@ html[data-theme="dark"] {
     /* Color Palette */
     --bg-main: #020108;              /* Navayr signature obsidian black */
     --bg-app: #020108;
-    --bg-surface: #08060D;           /* Deep dark panel */
-    --bg-surface-glass: rgba(8, 6, 13, 0.88);
-    --bg-card: #0D0A12;              /* Elevated dark card */
-    --bg-elevated: #15111A;
-    --bg-hover: #171320;
+    --bg-surface: #0C0914;           /* Deep dark panel */
+    --bg-surface-glass: rgba(12, 9, 20, 0.90);
+    --bg-card: #140F20;              /* Elevated solid dark card */
+    --bg-elevated: #1C162C;
+    --bg-hover: #221B34;
 
-    /* Typography Colors */
-    --text-primary: #F7F4EE;         /* Off-white warm text */
-    --text-secondary: #8E8A96;       /* Muted lavender-gray */
-    --text-tertiary: #5A5663;        /* Dimmed slate */
+    /* Typography Colors (High-Contrast Pure White & Radiant Silver) */
+    --text-primary: #FFFFFF;         /* Crisp brilliant white */
+    --text-secondary: #E2DEEC;       /* Bright luminous silver-lavender */
+    --text-tertiary: #B2ADC2;        /* Clear readable muted silver */
 
     /* Brand Accents: Electric Ruby & Rose Glow */
-    --brand-primary: #E63956;        /* Electric Ruby */
-    --brand-secondary: #9D4EDD;      /* Neon Violet */
-    --brand-light: rgba(230, 57, 86, 0.12);
-    --accent: #E63956;
-    --accent-hover: #FF4D6D;
-    --accent-light: rgba(230, 57, 86, 0.16);
-    --accent-glow: rgba(230, 57, 86, 0.35);
-    --gradient-brand: linear-gradient(135deg, #E63956, #9D4EDD);
+    --brand-primary: #FF3B5C;        /* Electric Ruby */
+    --brand-secondary: #B05CFF;      /* Neon Violet */
+    --brand-light: rgba(255, 59, 92, 0.16);
+    --accent: #FF3B5C;
+    --accent-hover: #FF5E7B;
+    --accent-light: rgba(255, 59, 92, 0.20);
+    --accent-glow: rgba(255, 59, 92, 0.40);
+    --gradient-brand: linear-gradient(135deg, #FF3B5C, #B05CFF);
 
     /* Borders & Outlines */
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(255, 255, 255, 0.22);
-    --border-subtle: rgba(255, 255, 255, 0.05);
+    --border-color: rgba(255, 255, 255, 0.14);
+    --border-strong: rgba(255, 255, 255, 0.32);
+    --border-subtle: rgba(255, 255, 255, 0.08);
 
     /* Badges & Shadows */
-    --tag-bg: rgba(230, 57, 86, 0.12);
-    --tag-text: #FF758F;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.8);
-    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.7);
+    --tag-bg: rgba(255, 59, 92, 0.16);
+    --tag-text: #FF8DA1;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.85);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.75);
 
     /* Mascot Elements */
     --robot-body: #1E1B28;
     --robot-face: #020108;
-    --robot-eye: #E63956;
-    --robot-accent: #9D4EDD;
+    --robot-eye: #FF3B5C;
+    --robot-accent: #B05CFF;
 }
 
 /* ── Typography & Base Styles ─────────────────────────────────────── */
@@ -185,6 +185,94 @@ body {
 }
 .font-display {
     font-family: var(--font-display);
+}
+
+/* ── Form Controls & Contrast Readability ─────────────────────────── */
+select, input, textarea, button {
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+}
+
+select {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+select option {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    padding: 0.5rem;
+}
+
+[data-theme="dark"] select option {
+    background-color: #140F20;
+    color: #FFFFFF;
+}
+
+[data-theme="light"] select option {
+    background-color: #FFFFFF;
+    color: #0D0407;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-tertiary);
+    opacity: 0.9;
+}
+
+/* Keyword Cloud & Analytics */
+.kw-cloud-word {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+}
+.kw-cloud-word:hover {
+    transform: scale(1.08);
+    background: var(--brand-light);
+}
+
+.kw-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    transition: background 0.2s ease;
+}
+.kw-list-item:hover {
+    background: var(--bg-hover);
+}
+.kw-list-rank {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    width: 24px;
+}
+.kw-list-word {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.925rem;
+}
+.kw-list-bar {
+    width: 140px;
+    height: 6px;
+    background: var(--border-strong);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.kw-list-bar-fill {
+    height: 100%;
+    background: var(--gradient-brand);
+    border-radius: 999px;
 }
 
 /* ── App Shell & Layout ───────────────────────────────────────────── */
@@ -794,8 +882,9 @@ body {
 }
 
 .topic-summary {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+    font-size: 0.925rem;
+    color: var(--text-primary);
+    opacity: 0.92;
     line-height: 1.6;
     margin-bottom: 0.75rem;
 }
@@ -808,11 +897,12 @@ body {
 
 .pill-tag {
     font-size: 0.75rem;
-    padding: 0.2rem 0.6rem;
+    padding: 0.25rem 0.65rem;
     border-radius: var(--radius-full);
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 /* ── Transcript View ──────────────────────────────────────────────── */

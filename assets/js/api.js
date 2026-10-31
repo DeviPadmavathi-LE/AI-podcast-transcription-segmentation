@@ -190,6 +190,16 @@ const API = {
         return data.romanized;
     },
 
+    /**
+     * Translates English podcast text to an Indic language and renders in English letters.
+     * @param {string} text
+     * @param {string} language - e.g. 'te' (Telugu), 'hi' (Hindi), 'kn' (Kannada), 'ta' (Tamil)
+     * @returns {Promise<{romanized: string, indic_script: string, language: string}>}
+     */
+    async explainRomanized(text, language) {
+        return await this._post('/explain_romanized', { text, language });
+    },
+
     // ─── Library ──────────────────────────────────────────────────────
     /**
      * Returns a list of previously processed podcasts from the server's outputs folder.

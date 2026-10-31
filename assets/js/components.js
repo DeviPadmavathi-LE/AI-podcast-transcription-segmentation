@@ -523,26 +523,37 @@ const Components = {
                     </select>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-                    <div class="card" style="height:60vh;overflow-y:auto;">
-                        <h3 style="margin-bottom:1rem;position:sticky;top:0;background:var(--bg-surface);
-                                   padding-bottom:0.75rem;border-bottom:1px solid var(--border-color);
-                                   color:var(--text-secondary);">
-                            Original (English)
-                        </h3>
-                        <div id="trans-orig" style="color:var(--text-secondary);white-space:pre-wrap;
-                                                     line-height:1.7;font-size:0.9375rem;">
-                            Loading transcript...
+                    <!-- Left: Original Podcast (English) -->
+                    <div class="card" style="height:60vh;display:flex;flex-direction:column;overflow:hidden;padding:0;">
+                        <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border-color);background:var(--bg-surface);flex-shrink:0;">
+                            <h3 style="margin:0;font-size:1rem;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;">
+                                <span>Original (English)</span>
+                                <span style="font-size:0.75rem;font-weight:normal;color:var(--text-tertiary);">Podcast Transcript</span>
+                            </h3>
+                        </div>
+                        <div style="flex:1;overflow-y:auto;padding:1.25rem;background:var(--bg-card);">
+                            <div id="trans-orig" style="color:var(--text-primary);white-space:pre-wrap;line-height:1.75;font-size:0.9375rem;">
+                                Loading transcript...
+                            </div>
                         </div>
                     </div>
-                    <div class="card" style="height:60vh;overflow-y:auto;background:var(--brand-light);">
-                        <h3 style="margin-bottom:1rem;position:sticky;top:0;background:var(--brand-light);
-                                   padding-bottom:0.75rem;border-bottom:1px solid rgba(59,130,246,0.2);
-                                   color:var(--brand-primary);">
-                            Translated
-                        </h3>
-                        <div id="trans-result" style="white-space:pre-wrap;line-height:1.7;
-                                                       font-size:0.9375rem;font-weight:500;color:var(--text-primary);">
-                            Select a language to begin translation...
+
+                    <!-- Right: Translated Output -->
+                    <div class="card" style="height:60vh;display:flex;flex-direction:column;overflow:hidden;padding:0;border-color:var(--border-strong);">
+                        <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border-color);background:var(--bg-surface);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
+                            <h3 style="margin:0;font-size:1rem;color:var(--brand-primary);font-weight:700;">
+                                Translated
+                            </h3>
+                            <button class="icon-btn"
+                                    onclick="app.copyToClipboard(document.getElementById('trans-result').textContent)"
+                                    title="Copy Translation">
+                                <i data-lucide="copy" width="15" height="15"></i>
+                            </button>
+                        </div>
+                        <div style="flex:1;overflow-y:auto;padding:1.25rem;background:var(--bg-card);">
+                            <div id="trans-result" style="white-space:pre-wrap;line-height:1.75;font-size:0.9375rem;font-weight:500;color:var(--text-primary);">
+                                Select a language to begin translation...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -558,53 +569,76 @@ const Components = {
     // ─────────────────────────────────────────────────────────────────
     RomanizationView() {
         return `
-            <div class="fade-in" style="max-width:1000px;margin:0 auto;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                    <h2>Romanization Studio</h2>
+            <div class="fade-in" style="max-width:1050px;margin:0 auto;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+                    <div>
+                        <h2 style="margin-bottom:0.25rem;">Romanization Studio</h2>
+                        <p style="font-size:0.875rem;color:var(--text-secondary);margin:0;">
+                            Explains your podcast in native Indian languages using English letters (Tanglish, Hinglish, Kanglish).
+                        </p>
+                    </div>
                     <div style="font-size:0.8125rem;color:var(--text-secondary);
                                 background:var(--bg-hover);padding:0.4rem 0.9rem;border-radius:999px;">
-                        Powered by Aksharamukha · IAST output
+                        Powered by Aksharamukha · IAST & Phonetic
                     </div>
                 </div>
-                <div style="display:flex;gap:0.6rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;">
-                    <span style="font-size:0.8125rem;color:var(--text-secondary);font-weight:600;">⚡ Podcast Quick-Load:</span>
-                    <button id="btn-rom-telugu" style="padding:0.35rem 0.75rem;font-size:0.8125rem;border-radius:var(--radius-sm);background:var(--bg-hover);border:1px solid var(--border-color);color:var(--text-primary);cursor:pointer;font-weight:500;">
-                        🇮🇳 Load Telugu Podcast
-                    </button>
-                    <button id="btn-rom-hindi" style="padding:0.35rem 0.75rem;font-size:0.8125rem;border-radius:var(--radius-sm);background:var(--bg-hover);border:1px solid var(--border-color);color:var(--text-primary);cursor:pointer;font-weight:500;">
-                        🇮🇳 Load Hindi Podcast
-                    </button>
-                    <button id="btn-rom-sample" style="padding:0.35rem 0.75rem;font-size:0.8125rem;border-radius:var(--radius-sm);background:var(--bg-hover);border:1px solid var(--border-color);color:var(--text-primary);cursor:pointer;font-weight:500;">
-                        ✨ Load Sample Quote
-                    </button>
-                </div>
+
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-                    <div class="card" style="height:50vh;display:flex;flex-direction:column;">
-                        <h3 style="margin-bottom:0.75rem;padding-bottom:0.75rem;
-                                   border-bottom:1px solid var(--border-color);color:var(--text-secondary);">
-                            Native Script (Input)
-                        </h3>
-                        <textarea id="rom-input"
-                                  placeholder="Paste Telugu, Hindi, Tamil, Kannada or other Indic script here..."
-                                  style="flex:1;border:none;resize:none;font-family:var(--font-sans);
-                                         font-size:1rem;outline:none;background:transparent;line-height:1.7;">
-                        </textarea>
-                    </div>
-                    <div class="card" style="height:50vh;overflow-y:auto;position:relative;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;
-                                    margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border-color);">
-                            <h3 style="color:var(--brand-secondary);">Romanized (IAST)</h3>
-                            <button class="icon-btn"
-                                    onclick="app.copyToClipboard(document.getElementById('rom-result').textContent)"
-                                    title="Copy romanized text">
-                                <i data-lucide="copy" width="14" height="14"></i>
-                            </button>
+                    <!-- Left: Original Podcast (English) -->
+                    <div class="card" style="height:60vh;display:flex;flex-direction:column;overflow:hidden;padding:0;">
+                        <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border-color);background:var(--bg-surface);flex-shrink:0;">
+                            <h3 style="margin:0;font-size:1rem;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;">
+                                <span>Original (English)</span>
+                                <span style="font-size:0.75rem;font-weight:normal;color:var(--text-tertiary);">Podcast Transcript</span>
+                            </h3>
                         </div>
-                        <div id="rom-result" style="white-space:pre-wrap;line-height:1.7;font-weight:500;font-size:1rem;">
-                            Type or paste text to romanize...
+                        <div style="flex:1;overflow-y:auto;padding:1.25rem;background:var(--bg-card);">
+                            <div id="rom-orig" style="color:var(--text-primary);white-space:pre-wrap;line-height:1.75;font-size:0.9375rem;">
+                                Loading transcript...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Romanized Explanation (English Letters) with Language Dropdown -->
+                    <div class="card" style="height:60vh;display:flex;flex-direction:column;overflow:hidden;padding:0;border-color:var(--border-strong);">
+                        <div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--border-color);background:var(--bg-surface);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <h3 style="color:var(--brand-primary);margin:0;font-size:1rem;font-weight:700;">Romanized</h3>
+                                <span style="font-size:0.75rem;background:var(--tag-bg);padding:0.2rem 0.5rem;border-radius:4px;color:var(--brand-primary);font-weight:600;">English Letters</span>
+                            </div>
+
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <select id="rom-lang-select" style="padding:0.45rem 0.75rem;border-radius:var(--radius-sm);
+                                        border:1px solid var(--border-color);font-family:var(--font-sans);font-size:0.875rem;
+                                        background:var(--bg-surface);color:var(--text-primary);cursor:pointer;font-weight:600;">
+                                    <option value="te" selected>Telugu (Tanglish)</option>
+                                    <option value="hi">Hindi (Hinglish)</option>
+                                    <option value="kn">Kannada (Kanglish)</option>
+                                    <option value="ta">Tamil (Tanglish)</option>
+                                    <option value="ml">Malayalam</option>
+                                    <option value="gu">Gujarati</option>
+                                    <option value="bn">Bengali</option>
+                                </select>
+                                <button class="icon-btn"
+                                        onclick="app.copyToClipboard(document.getElementById('rom-result').textContent)"
+                                        title="Copy Romanized explanation">
+                                    <i data-lucide="copy" width="15" height="15"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="flex:1;overflow-y:auto;padding:1.25rem;background:var(--bg-card);">
+                            <div id="rom-result" style="white-space:pre-wrap;line-height:1.75;font-weight:500;
+                                                        font-size:0.9375rem;color:var(--text-primary);">
+                                Select a language to explain in English letters...
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <p style="margin-top:0.75rem;color:var(--text-tertiary);font-size:0.8125rem;">
+                    💡 Explains your podcast in the chosen Indian language, written phonetically in the English alphabet (Tanglish / Hinglish / Kanglish).
+                </p>
             </div>
         `;
     },
