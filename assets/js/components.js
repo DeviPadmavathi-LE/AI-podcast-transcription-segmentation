@@ -439,10 +439,11 @@ const Components = {
                     <div style="padding:1rem 1.5rem;border-top:1px solid var(--border-color);">
                         <form id="chat-form" style="display:flex;gap:0.75rem;align-items:center;">
                             <input type="text" id="chat-input"
-                                   placeholder="Ask something about this podcast..."
-                                   style="flex:1;padding:0.875rem 1.25rem;border:1px solid var(--border-color);
-                                          border-radius:999px;background:var(--bg-hover);
-                                          font-family:var(--font-sans);font-size:0.9375rem;"
+                                   placeholder="Ask Talkie anything about this podcast..."
+                                   style="flex:1;padding:0.875rem 1.25rem;border:1.5px solid var(--border-strong);
+                                          border-radius:999px;background:var(--bg-card);color:var(--text-primary);
+                                          font-family:var(--font-sans);font-size:0.95rem;font-weight:500;
+                                          outline:none;caret-color:var(--brand-primary);"
                                    required autocomplete="off">
                             <button type="submit" id="chat-send"
                                     style="background:var(--brand-primary);color:white;border:none;

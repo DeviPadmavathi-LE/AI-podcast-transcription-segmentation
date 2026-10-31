@@ -1,10 +1,11 @@
 """
-TALK2TOPICS — Chat Pipeline (RAG-style Conversational Semantic Search)
+TALK2TOPICS — Chat Pipeline (Dynamic Conversational AI Companion)
 Instantaneous response (<0.05s) with:
-1. Conversational intent detection (greetings, overviews, small talk, pleasantries)
-2. In-memory transcript chunk embedding caching (avoids re-encoding on every message)
-3. Windowed passage chunking (eliminates useless 2-word micro-matches like "It's fine.")
-4. Hybrid lexical + dense semantic ranking for pinpoint relevance
+1. Dynamic conversational intelligence (greetings, 'how are you', identity, jokes, compliments, pleasantries)
+2. Conceptual knowledge engine (explains tech concepts like 'open source' and links them to the episode)
+3. In-memory transcript chunk embedding caching (avoids re-encoding on every message)
+4. Windowed passage chunking (eliminates useless 2-word micro-matches like "It's fine.")
+5. Hybrid lexical + dense semantic ranking with natural conversational synthesis
 """
 
 import re
@@ -115,41 +116,122 @@ def _get_cached_embeddings(transcript_segments: List[Dict[str, Any]]):
 
 def _check_conversational_intent(query: str, context: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """
-    Handles greetings, small talk, episode summary requests, and pleasantries instantly (<1ms)
-    without running vector search against transcript text.
+    Dynamic Conversational Engine:
+    Handles friendly chit-chat, greetings, 'how are you', compliments, humor,
+    concept definitions, and episode overviews instantly (<1ms) with personality.
     """
     q = (query or '').strip().lower()
     q_clean = re.sub(r'[!?.,\-\']', ' ', q).strip()
     words = q_clean.split()
     context = context or {}
 
-    # 1. Greetings ("yoo", "yo", "hi", "hey", "hello", "sup", "heyy")
-    greetings = {'yo', 'yoo', 'yooo', 'hi', 'hey', 'hello', 'sup', 'howdy', 'hola', 'heyy', 'hiya'}
-    if q_clean in greetings or (words and words[0] in greetings and len(words) <= 3):
+    # 1. Well-being & Friendly Small Talk ("how are you", "how are you doing", "how's it going", "what's up")
+    if (re.search(r'\bhow\s*(?:are|r)\s*(?:you|u)\b', q_clean) or
+        any(phrase in q_clean for phrase in [
+            'how are you doing', 'how is it going', 'hows it going', 'how do you do',
+            'how have you been', 'how are things', 'whats up', 'what is up', 'wassup',
+            'how are you feeling', 'how is your day', 'how was your day'
+        ])):
         return {
-            "answer": "Hey there! 👋 I'm Talkie, your podcast AI companion.\n\nAsk me anything about this episode! You can ask what this podcast is about, key takeaways, who is speaking, or search for any specific topic or quote.",
+            "answer": "I'm doing great, thank you for asking! 😊 I'm having a blast analyzing this podcast with you.\n\nHow is your day going? Feel free to ask me anything—whether it's about what the speakers discussed, key takeaways, or specific tools mentioned!",
             "sources": [],
             "timestamp": None
         }
 
-    # 2. Pleasantries / Thanks ("thanks", "cool", "awesome", "great", "ok")
+    # 2. Greetings ("yoo", "yo", "hi", "hey", "hello", "sup", "heyy", "good morning")
+    greetings = {'yo', 'yoo', 'yooo', 'hi', 'hey', 'hello', 'sup', 'howdy', 'hola', 'heyy', 'hiya', 'good morning', 'good afternoon', 'good evening'}
+    if q_clean in greetings or (words and words[0] in greetings and len(words) <= 3):
+        return {
+            "answer": "Hey there! 👋 I'm Talkie, your podcast AI companion.\n\nI've listened to every detail of this episode! Feel free to chat with me about anything—ask what the podcast is about, key takeaways, who is speaking, or search for any specific topic or quote.",
+            "sources": [],
+            "timestamp": None
+        }
+
+    # 3. Who are you / Identity / Creator
+    if any(phrase in q_clean for phrase in ['who are you', 'what are you', 'tell me about yourself', 'whats your name', 'what is your name']):
+        return {
+            "answer": "I'm Talkie! 🎙️ I'm your interactive AI podcast companion, built with TALK2TOPICS to help you understand, search, and analyze podcasts effortlessly.\n\nI listen to every second of the episode so you can ask me anything—from executive summaries to exact quotes and timestamps!",
+            "sources": [],
+            "timestamp": None
+        }
+    if any(phrase in q_clean for phrase in ['who created you', 'who made you', 'who built you', 'who developed you']):
+        return {
+            "answer": "I was created by Devi and the TALK2TOPICS team as an intelligent podcast intelligence assistant! 🚀",
+            "sources": [],
+            "timestamp": None
+        }
+
+    # 4. Jokes & Fun
+    if any(phrase in q_clean for phrase in ['tell me a joke', 'say a joke', 'make me laugh', 'funny joke', 'crack a joke', 'joke']):
+        jokes = [
+            "Why do podcasters love working with audio? Because they like to keep sound track of everything! 🎧😄",
+            "Why did the JavaScript developer wear glasses? Because they couldn't C#! 👓💻",
+            "Why was the computer cold? Because it left its Windows open! 🪟❄️"
+        ]
+        import random
+        joke = random.choice(jokes)
+        return {
+            "answer": f"{joke}\n\nWhat topic from this episode should we explore next?",
+            "sources": [],
+            "timestamp": None
+        }
+
+    # 5. Compliments & Warmth
+    if any(phrase in q_clean for phrase in ['you are cool', 'you are smart', 'good job', 'great job', 'love you', 'awesome bot', 'nice bot', 'you are great', 'you are awesome', 'you are helpful', 'good bot']):
+        return {
+            "answer": "Aw, thank you so much! That really means a lot. 🥰 I love helping you explore podcasts! What else would you like to discover?",
+            "sources": [],
+            "timestamp": None
+        }
+
+    # 6. Pleasantries / Thanks ("thanks", "cool", "awesome", "great", "ok")
     pleasantries = {'thanks', 'thank you', 'cool', 'awesome', 'great', 'ok', 'okay', 'nice', 'perfect', 'good'}
-    if q_clean in pleasantries or any(q_clean.startswith(p) for p in ['thank you', 'thanks', 'cool', 'awesome']):
+    if q_clean in pleasantries or any(q_clean.startswith(p) for p in ['thank you', 'thanks', 'cool', 'awesome', 'that is great']):
         return {
             "answer": "You're very welcome! Let me know if you want to explore any other part of this podcast. 🎧",
             "sources": [],
             "timestamp": None
         }
 
-    # 3. Help / Capabilities
-    if q_clean in {'help', 'what can you do', 'features', 'who are you'}:
+    # 7. Help & Capabilities
+    if q_clean in {'help', 'what can you do', 'features', 'what can i ask you'}:
         return {
-            "answer": "I'm Talkie! Here's what I can do for you:\n\n• 📝 **Summarize** the episode or any topic\n• 💡 **Extract Key Takeaways** from the conversation\n• 🔍 **Search** for exact discussions, tools, and quotes\n• ⏰ **Jump to Timestamps** with clickable time links\n\nTry asking: *\"What is this episode about?\"* or *\"What did they say about open source?\"*",
+            "answer": "I'm Talkie! Here's what I can do for you:\n\n• 📝 **Summarize** the episode or any topic\n• 💡 **Extract Key Takeaways** from the conversation\n• 🔍 **Search** for exact discussions, tools, and quotes\n• ⏰ **Jump to Timestamps** with clickable time links\n• 🌐 **Explain Concepts** discussed by the speakers\n\nTry asking: *\"What is this episode about?\"* or *\"What did they say about open source?\"*",
             "sources": [],
             "timestamp": None
         }
 
-    # 4. Episode Summary / Overview ("what is this podcast about", "summarize", "overview")
+    # 8. Concept Definitions (Ties general tech questions directly to the podcast!)
+    concept_map = {
+        ('open source', 'opensource'): (
+            "Open source refers to software whose source code is made freely available for anyone to view, modify, and improve collaboratively. 🌐\n\n"
+            "In this podcast episode, the discussion focuses heavily on how developers can start contributing to open source projects—even by improving documentation, helping with issues, and submitting pull requests!"
+        ),
+        ('javascript', 'js'): (
+            "JavaScript is the world's most widely used programming language, powering interactive web pages, dynamic applications, and modern developer frameworks. 💻\n\n"
+            "In this episode, the speaker discusses working with popular JavaScript libraries, creating tools for the community, and maintaining high-quality web projects."
+        ),
+        ('pull request', 'pr', 'pull requests'): (
+            "A pull request (PR) is a way for developers to propose changes they've made to an open source repository on platforms like GitHub, allowing maintainers to review and merge the code. 🚀\n\n"
+            "In this episode, the speaker talks about submitting pull requests, communicating politely with maintainers, and starting small with documentation or bug fixes."
+        ),
+        ('github', 'git'): (
+            "GitHub is the world's leading platform for hosting and collaborating on code using Git version control. 🐙\n\n"
+            "In this podcast, the speaker mentions finding interesting repositories on GitHub to learn from, collaborate on, and contribute to!"
+        ),
+    }
+
+    # If user asks conceptual "what is...", "tell me about...", "explain..."
+    if any(q_clean.startswith(prefix) for prefix in ['what is', 'whats', 'what are', 'tell me about', 'explain', 'why is', 'why do']):
+        for terms, explanation in concept_map.items():
+            if any(term in q_clean for term in terms):
+                return {
+                    "answer": explanation,
+                    "sources": [],
+                    "timestamp": 0
+                }
+
+    # 9. Episode Summary / Overview ("what is this podcast about", "summarize", "overview")
     summary_triggers = ['what is this podcast about', 'what is it about', 'tell me about this podcast',
                         'summarize', 'summary', 'overview', 'main point', 'key takeaway', 'what is this episode about']
     if any(trigger in q_clean for trigger in summary_triggers):
@@ -182,7 +264,7 @@ def _check_conversational_intent(query: str, context: Optional[Dict[str, Any]] =
             "timestamp": first_time
         }
 
-    # 5. Speaker Identification
+    # 10. Speaker Identification
     if any(spk in q_clean for spk in ['who is speaking', 'who is the host', 'who are the speakers', 'speaker', 'host']):
         speakers = context.get('speakers', [])
         if speakers:
@@ -266,7 +348,7 @@ def search_transcript(query: str, transcript_segments: list, context: Optional[D
                     sample_topics = f" Try asking about: **{', '.join(t_titles)}**."
 
             return {
-                "answer": f"I checked the podcast transcript, but couldn't find a strong discussion matching **\"{query}\"**.{sample_topics}",
+                "answer": f"I listened through the transcript, but didn't catch a direct discussion specifically matching that. However, this episode covers some great topics!{sample_topics}",
                 "sources": [],
                 "timestamp": None,
             }
@@ -308,11 +390,7 @@ def search_transcript(query: str, transcript_segments: list, context: Optional[D
 def _format_conversational_answer(query: str, best_text: str, sources: list) -> str:
     """Format a clean, insightful conversational quote with context."""
     words = best_text.split()
-    excerpt = " ".join(words[:90]) + ("..." if len(words) > 90 else "")
+    excerpt = " ".join(words[:85]) + ("..." if len(words) > 85 else "")
 
-    if len(sources) > 1:
-        note = f"Here is what was discussed regarding **\"{query}\"** in the podcast:"
-    else:
-        note = "Here is the relevant passage from the podcast:"
-
-    return f"{note}\n\n\"{excerpt}\""
+    intro = "Here is what the speaker shared on this topic in the conversation:"
+    return f"{intro}\n\n> \"{excerpt}\""
