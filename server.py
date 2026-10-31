@@ -65,25 +65,35 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# Single-pipeline execution lock to prevent PyTorch thread contention and attention hook collisions
+pipeline_execution_lock = threading.Lock()
+
+
 def run_pipeline_async(filepath, job_id):
     """Runs the full AI pipeline in a background thread."""
-    log.info(f"[{job_id}] ▶ Background pipeline started for: {filepath}")
+    with pipeline_execution_lock:
+        log.info(f"[{job_id}] ▶ Background pipeline started for: {filepath}")
+        start_epoch = time.time()
+        update_job(job_id, start_time=start_epoch, elapsed_sec=0)
 
-    def progress_callback(stage: str, pct: int):
-        update_job(job_id, stage=stage, progress=pct)
-        log.info(f"[{job_id}] [{pct:3d}%] {stage}")
+        def progress_callback(stage: str, pct: int):
+            now = time.time()
+            elapsed = int(now - start_epoch)
+            update_job(job_id, stage=stage, progress=pct, elapsed_sec=elapsed)
+            log.info(f"[{job_id}] [{pct:3d}%] ({elapsed}s) {stage}")
 
-    try:
-        from pipeline.orchestrator import process_audio
-        result = process_audio(filepath, job_id, progress_callback=progress_callback)
-        update_job(job_id, stage='Complete', progress=100, done=True, data=result['data'])
-        log.info(f"[{job_id}] ✔ Pipeline complete.")
+        try:
+            from pipeline.orchestrator import process_audio
+            result = process_audio(filepath, job_id, progress_callback=progress_callback)
+            elapsed = int(time.time() - start_epoch)
+            update_job(job_id, stage='Complete', progress=100, done=True, data=result['data'], elapsed_sec=elapsed)
+            log.info(f"[{job_id}] ✔ Pipeline complete in {elapsed}s.")
 
-    except Exception as e:
-        error_msg = str(e)
-        log.error(f"[{job_id}] ✘ Pipeline failed: {error_msg}")
-        traceback.print_exc()
-        update_job(job_id, stage='Error', progress=0, done=True, error=error_msg)
+        except Exception as e:
+            error_msg = str(e)
+            log.error(f"[{job_id}] ✘ Pipeline failed: {error_msg}")
+            traceback.print_exc()
+            update_job(job_id, stage='Error', progress=0, done=True, error=error_msg)
 
 
 # ─────────────────────────────────────────────
@@ -102,8 +112,8 @@ def serve_assets(filename):
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """
-    Accepts an audio file, saves it, and immediately starts the AI pipeline
-    in a background thread. Returns a job_id the client can poll.
+    Accepts an audio file, saves it, and starts the AI pipeline.
+    If an existing job is actively running, attaches to it to prevent thrashing.
     """
     if 'file' not in request.files:
         return jsonify({"error": "No file part in the request."}), 400
@@ -116,6 +126,18 @@ def upload_file():
         log.warning(f"Rejected upload: invalid extension '{file.filename}'")
         return jsonify({"error": "Invalid file type. Only MP3, WAV, and M4A are supported."}), 400
 
+    # If another job is currently active, re-attach to it
+    with jobs_lock:
+        active = [jid for jid, j in jobs.items() if not j.get('done', False) and j.get('stage') not in ('Error', 'Complete')]
+        if active:
+            active_job_id = active[0]
+            log.info(f"Upload received while job '{active_job_id}' is active. Re-attaching client to active job.")
+            return jsonify({
+                "job_id": active_job_id,
+                "status": "processing",
+                "message": "A podcast is currently being processed. Re-attached to active job."
+            }), 200
+
     # Save file with UUID name to avoid collisions
     job_id = str(uuid.uuid4())
     ext = file.filename.rsplit('.', 1)[1].lower()
@@ -127,7 +149,7 @@ def upload_file():
     log.info(f"[{job_id}] ✔ File saved: {safe_name} ({file_size_mb:.1f} MB)")
 
     # Register the job immediately so /status returns something right away
-    update_job(job_id, stage='Queued', progress=0, done=False, error=None, data=None)
+    update_job(job_id, stage='Queued', progress=0, done=False, error=None, data=None, elapsed_sec=0)
 
     # Kick off the background thread
     thread = threading.Thread(
@@ -144,7 +166,7 @@ def upload_file():
 def job_status(job_id):
     """
     Poll this endpoint to get the current progress of a processing job.
-    Returns: { job_id, stage, progress, done, error, data }
+    Returns: { job_id, stage, progress, done, error, elapsed_sec, data }
     """
     job = get_job(job_id)
     if job is None:
@@ -156,6 +178,7 @@ def job_status(job_id):
         "progress": job.get('progress', 0),
         "done": job.get('done', False),
         "error": job.get('error', None),
+        "elapsed_sec": job.get('elapsed_sec', 0)
     }
 
     # Only include full data when job is complete and successful

@@ -32,8 +32,8 @@ def process_audio(filepath: str, job_id: str, progress_callback=None):
     processor = PodcastProcessor(
         whisper_model="base",
         embedding_model="all-MiniLM-L6-v2",
-        min_topic_duration_sec=40.0,
-        similarity_threshold=0.55
+        min_topic_duration_sec=60.0,
+        similarity_threshold=0.52
     )
 
     result = processor.process(

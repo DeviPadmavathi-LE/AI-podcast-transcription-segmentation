@@ -207,8 +207,8 @@ const app = {
             this._setProcessingStage('Upload complete. Starting AI pipeline...', 8);
 
             // ── Step 2: Poll for real progress ─────────────────────────
-            await API.pollStatus(jobId, (stage, pct) => {
-                this._setProcessingStage(stage, pct);
+            await API.pollStatus(jobId, (stage, pct, elapsedSec) => {
+                this._setProcessingStage(stage, pct, elapsedSec);
                 Mascot.reactToProcessing(stage);
             });
 
@@ -226,13 +226,16 @@ const app = {
         }
     },
 
-    _setProcessingStage(label, pct) {
+    _setProcessingStage(label, pct, elapsedSec = 0) {
         const bar     = document.getElementById('progress-bar-fill');
         const stageLbl = document.getElementById('progress-stage');
         const pctLbl  = document.getElementById('progress-pct');
 
         if (bar)      bar.style.width        = `${Math.min(pct, 100)}%`;
-        if (stageLbl) stageLbl.textContent   = label;
+        if (stageLbl) {
+            const timeStr = elapsedSec > 0 ? ` · ${Math.floor(elapsedSec / 60)}m ${elapsedSec % 60}s elapsed` : '';
+            stageLbl.textContent = `${label}${timeStr}`;
+        }
         if (pctLbl)   pctLbl.textContent     = `${Math.round(pct)}%`;
 
         // Light up the matching step icon

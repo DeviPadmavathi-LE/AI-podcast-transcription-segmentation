@@ -32,8 +32,11 @@ const API = {
             if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
             return data;
         } catch (err) {
-            if (err.message && err.message.includes('Failed to fetch')) {
-                throw new Error(`Cannot reach AI backend at ${this.BASE_URL}. Ensure server.py is running!`);
+            if (err.message && (err.message.includes('Failed to fetch') || err.name === 'TypeError')) {
+                if (window.location.protocol === 'https:' && this.BASE_URL.startsWith('http:')) {
+                    throw new Error(`Browser Security Notice: Browsers block HTTPS cloud pages (Vercel) from calling local HTTP backends (${this.BASE_URL}). Please open http://localhost:5000 directly in your browser to run your local AI pipeline!`);
+                }
+                throw new Error(`Cannot reach AI backend at ${this.BASE_URL}. Ensure 'python server.py' is running on your machine! Open http://localhost:5000 directly.`);
             }
             throw err;
         }
@@ -58,12 +61,19 @@ const API = {
         const formData = new FormData();
         formData.append('file', file);
 
-        const res = await fetch(`${this.BASE_URL}/upload`, {
-            method: 'POST',
-            body: formData,
-        });
-
-        const data = await res.json();
+        let res, data;
+        try {
+            res = await fetch(`${this.BASE_URL}/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+            data = await res.json();
+        } catch (err) {
+            if (window.location.protocol === 'https:' && this.BASE_URL.startsWith('http:')) {
+                throw new Error(`Browser Security Block: Browsers block HTTPS cloud pages (Vercel) from calling local HTTP backends (${this.BASE_URL}). Please open http://localhost:5000 directly in your browser to run your local AI pipeline!`);
+            }
+            throw new Error(`Cannot reach AI backend at ${this.BASE_URL}. Ensure 'python server.py' is running and open http://localhost:5000 directly.`);
+        }
 
         if (!res.ok) {
             throw new Error(data.error || `Upload failed with HTTP ${res.status}`);
@@ -98,7 +108,7 @@ const API = {
 
                     // Report progress to UI
                     if (typeof onProgress === 'function') {
-                        onProgress(status.stage || 'Processing...', status.progress || 0);
+                        onProgress(status.stage || 'Processing...', status.progress || 0, status.elapsed_sec || 0);
                     }
 
                     if (status.done) {

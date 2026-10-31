@@ -91,8 +91,8 @@ const Components = {
                         ${sizeMB ? `<span style="color:var(--text-tertiary);font-size:0.85rem;">${sizeMB}</span>` : ''}
                     </div>
 
-                    <h2 class="processing-title">Analyzing Podcast...</h2>
-                    <p class="processing-sub">This can take 1–5 minutes depending on audio length.</p>
+                    <h2 class="processing-title">Analyzing Podcast with AI...</h2>
+                    <p class="processing-sub">Running local Whisper ASR &amp; NLP models (~2–3 minutes for a 10-minute podcast).</p>
 
                     <div class="processing-bar-wrap">
                         <div class="processing-bar">

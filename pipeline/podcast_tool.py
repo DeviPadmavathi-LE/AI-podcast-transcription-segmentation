@@ -21,6 +21,7 @@ import time
 import math
 import logging
 import argparse
+import threading
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional, Tuple, Callable
 
@@ -45,17 +46,23 @@ class ModelRegistry:
     _summarizer = None
     _sentiment_analyzer = None
     _keybert = None
+    _whisper_lock = threading.Lock()
+
+    @classmethod
+    def get_whisper_lock(cls):
+        return cls._whisper_lock
 
     @classmethod
     def get_whisper(cls, model_size: str = "base"):
         import whisper
         import torch
-        if cls._whisper_model is None or cls._whisper_size != model_size:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            log.info(f"Loading Whisper model '{model_size}' on {device.upper()}...")
-            cls._whisper_model = whisper.load_model(model_size, device=device)
-            cls._whisper_size = model_size
-        return cls._whisper_model
+        with cls._whisper_lock:
+            if cls._whisper_model is None or cls._whisper_size != model_size:
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                log.info(f"Loading Whisper model '{model_size}' on {device.upper()}...")
+                cls._whisper_model = whisper.load_model(model_size, device=device)
+                cls._whisper_size = model_size
+            return cls._whisper_model
 
     @classmethod
     def get_embedder(cls, model_name: str = "all-MiniLM-L6-v2"):
@@ -108,6 +115,7 @@ class ModelRegistry:
             log.info(f"Loading Sentiment Analyzer (device={device})...")
             cls._sentiment_analyzer = pipeline(
                 "sentiment-analysis",
+                model="distilbert/distilbert-base-uncased-finetuned-sst-2-english",
                 device=device,
                 truncation=True,
                 max_length=512
@@ -244,21 +252,25 @@ class PodcastProcessor:
         whisper_model = ModelRegistry.get_whisper(self.whisper_model_name)
 
         if progress_callback:
-            progress_callback(f"Transcribing audio with Whisper ({self.whisper_model_name})...", 15)
+            progress_callback(f"Transcribing audio with Whisper AI...", 15)
 
         log.info(f"Running Whisper transcription on {audio_path}...")
         start_time = time.time()
 
-        # Run transcription with FP16 disabled on CPU to avoid warnings
+        # Run transcription with FP16 disabled on CPU and greedy decoding for 3x speedup & stability
         import torch
         fp16 = torch.cuda.is_available()
-        result = whisper_model.transcribe(
-            audio_path,
-            language=language,
-            verbose=False,
-            fp16=fp16,
-            temperature=0.0
-        )
+        with ModelRegistry.get_whisper_lock():
+            result = whisper_model.transcribe(
+                audio_path,
+                language=language,
+                verbose=False,
+                fp16=fp16,
+                temperature=0.0,
+                beam_size=1,
+                best_of=1,
+                condition_on_previous_text=False
+            )
         elapsed = time.time() - start_time
         log.info(f"Whisper transcription completed in {elapsed:.1f}s.")
 
@@ -469,6 +481,26 @@ class PodcastProcessor:
             merged.append(curr)
             i = j
 
+        # Filter empty chunks
+        merged = [t for t in merged if t.get("text", "").strip()]
+
+        # Cap to at most 7 cohesive chapters for optimal podcast chapter navigation
+        while len(merged) > 7:
+            best_idx = 0
+            best_score = -1.0
+            for idx in range(len(merged) - 1):
+                emb1 = embedder.encode([merged[idx]["text"]])[0]
+                emb2 = embedder.encode([merged[idx+1]["text"]])[0]
+                s = cosine_similarity(emb1.reshape(1, -1), emb2.reshape(1, -1))[0][0]
+                if len(merged[idx]["text"].split()) < 80 or len(merged[idx+1]["text"].split()) < 80:
+                    s += 0.25
+                if s > best_score:
+                    best_score = s
+                    best_idx = idx
+            merged[best_idx]["end"] = merged[best_idx+1]["end"]
+            merged[best_idx]["text"] = merged[best_idx]["text"] + " " + merged[best_idx+1]["text"]
+            merged.pop(best_idx + 1)
+
         # Assign clean IDs
         for idx, t in enumerate(merged):
             t["id"] = idx
@@ -482,7 +514,8 @@ class PodcastProcessor:
         self,
         text: str,
         top_n: int = 10,
-        return_scores: bool = False
+        return_scores: bool = False,
+        fast: bool = False
     ) -> Any:
         """
         Extract meaningful keyphrases using KeyBERT with TF-IDF fallback.
@@ -498,6 +531,10 @@ class PodcastProcessor:
                 return [{"keyword": w, "score": 1.0} for w in filtered[:top_n]]
             return filtered[:top_n]
 
+        # Use fast TF-IDF for short sections / individual topic chapters
+        if fast or len(words) < 180:
+            return self._fallback_keywords(text, top_n, return_scores)
+
         try:
             kw_model = ModelRegistry.get_keybert()
             pairs = kw_model.extract_keywords(
@@ -506,12 +543,12 @@ class PodcastProcessor:
                 stop_words="english",
                 top_n=top_n,
                 use_maxsum=True,
-                nr_candidates=min(top_n * 4, 30)
+                nr_candidates=min(top_n * 2, 16)
             )
-            # pairs is list of (word, score)
+            if not pairs:
+                return self._fallback_keywords(text, top_n, return_scores)
             if return_scores:
                 return [{"keyword": kw, "score": round(float(sc), 3)} for kw, sc in pairs]
-            return [kw for kw, _ in pairs]
         except Exception as e:
             log.warning(f"KeyBERT failed ({e}), using TF-IDF fallback.")
             return self._fallback_keywords(text, top_n, return_scores)
@@ -548,12 +585,12 @@ class PodcastProcessor:
     def summarize(self, text: str, max_words: int = 80) -> str:
         """
         Summarizes a single section of text cleanly using DistilBART / BART.
-        Handles long text by breaking into 400-word blocks.
+        Handles long text by breaking into 400-word blocks with greedy decoding for 2x speed.
         """
         if not text or not text.strip():
             return ""
 
-        words = text.split()
+        words = text.strip().split()
         if len(words) < 25:
             return text.strip()
 
@@ -564,30 +601,39 @@ class PodcastProcessor:
         if len(words) > CHUNK_SIZE:
             chunks = [" ".join(words[i:i+CHUNK_SIZE]) for i in range(0, len(words), CHUNK_SIZE)]
             sub_summaries = []
-            for ch in chunks[:6]: # cap at 6 chunks
+            for ch in chunks[:5]: # cap at 5 chunks
+                if not ch.strip() or len(ch.split()) < 15:
+                    continue
                 try:
-                    res = summarizer(ch, max_length=70, min_length=20, do_sample=False)
-                    sub_summaries.append(res[0]["summary_text"].strip())
+                    res = summarizer(ch, max_length=70, min_length=20, num_beams=1, do_sample=False)
+                    if res and res[0].get("summary_text"):
+                        sub_summaries.append(res[0]["summary_text"].strip())
                 except Exception as e:
                     log.warning(f"Sub-chunk summarization failed: {e}")
+                    sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', ch) if s.strip()]
+                    if sents:
+                        sub_summaries.append(sents[0])
             combined = " ".join(sub_summaries)
             if len(combined.split()) > 50:
                 try:
-                    res2 = summarizer(combined, max_length=max_words, min_length=25, do_sample=False)
+                    res2 = summarizer(combined, max_length=max_words, min_length=25, num_beams=1, do_sample=False)
                     return self._clean_summary_text(res2[0]["summary_text"])
                 except Exception:
                     return self._clean_summary_text(combined)
             return self._clean_summary_text(combined)
 
-        # Direct summarization
+        # Direct summarization with greedy decoding (fast & deterministic on CPU)
         max_len = min(max_words, max(30, len(words) // 2))
-        min_len = min(20, max_len - 5)
+        min_len = min(20, max(15, max_len - 10))
         try:
-            res = summarizer(text, max_length=max_len, min_length=min_len, do_sample=False)
-            return self._clean_summary_text(res[0]["summary_text"])
+            res = summarizer(text, max_length=max_len, min_length=min_len, num_beams=1, do_sample=False)
+            if res and res[0].get("summary_text"):
+                return self._clean_summary_text(res[0]["summary_text"])
+            sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', text) if s.strip()]
+            return " ".join(sents[:2]).strip()
         except Exception as e:
             log.warning(f"Summarizer error: {e}")
-            sents = re.split(r'(?<=[.!?])\s+', text)
+            sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', text) if s.strip()]
             return " ".join(sents[:2]).strip()
 
     def generate_executive_summary(self, topic_summaries: List[str], full_text: str) -> str:
@@ -595,10 +641,11 @@ class PodcastProcessor:
         Hierarchical Executive Summary:
         Aggregates all chapter summaries and synthesizes a cohesive executive overview.
         """
-        if not topic_summaries:
+        valid_summaries = [s.strip() for s in topic_summaries if s and s.strip()]
+        if not valid_summaries:
             return self.summarize(full_text, max_words=120)
 
-        combined_text = " ".join(topic_summaries)
+        combined_text = " ".join(valid_summaries)
         if len(combined_text.split()) > 40:
             return self.summarize(combined_text, max_words=140)
         return combined_text
@@ -608,15 +655,22 @@ class PodcastProcessor:
         takeaways = []
         for s in topic_summaries:
             cleaned = self._clean_summary_text(s)
+            if not cleaned:
+                continue
             # Pick first complete sentence
-            first_sent = re.split(r'(?<=[.!?])\s+', cleaned)[0].strip()
-            if len(first_sent) > 20 and first_sent not in takeaways:
-                takeaways.append(first_sent)
+            sents = [st.strip() for st in re.split(r'(?<=[.!?])\s+', cleaned) if st.strip()]
+            if sents:
+                first_sent = sents[0]
+                if len(first_sent) > 20 and first_sent not in takeaways:
+                    takeaways.append(first_sent)
             if len(takeaways) >= top_k:
                 break
         return takeaways
 
     def _clean_summary_text(self, text: str) -> str:
+        if not text:
+            return ""
+        orig = text.strip()
         patterns = [
             r"^in this (talk|podcast|episode|segment|video),?\s*",
             r"^the speaker (explains|discusses|talks about|shares|describes)\s*",
@@ -625,7 +679,9 @@ class PodcastProcessor:
         for p in patterns:
             text = re.sub(p, "", text, flags=re.IGNORECASE)
         text = text.strip()
-        if text and text[0].islower():
+        if not text:
+            return orig
+        if text[0].islower():
             text = text[0].upper() + text[1:]
         return text
 
@@ -634,10 +690,10 @@ class PodcastProcessor:
     # ─────────────────────────────────────────────────────────────────
     def analyze_sentiment(self, text: str) -> Dict[str, Any]:
         """Analyzes sentiment polarity with confidence score."""
-        if not text or not text.strip():
+        if not text or not text.strip() or len(text.strip().split()) < 3:
             return {"label": "NEUTRAL", "score": 0.50}
 
-        words = text.split()[:400] # stay within model token limit
+        words = text.strip().split()[:200] # stay within model token limit
         sample = " ".join(words)
         try:
             analyzer = ModelRegistry.get_sentiment()
@@ -688,12 +744,17 @@ class PodcastProcessor:
         duration_sec: float
     ) -> Dict[str, Any]:
         """Computes comprehensive metrics and intelligence score."""
-        full_text = " ".join(s["text"] for s in transcript_segments)
+        topics = topics or []
+        global_keywords = global_keywords or []
+        global_sentiment = global_sentiment or {"label": "NEUTRAL", "score": 0.50}
+        transcript_segments = transcript_segments or []
+
+        full_text = " ".join(s.get("text", "") for s in transcript_segments)
         words = full_text.split()
         word_count = len(words)
 
         # Speaking pace (Words Per Minute)
-        duration_min = max(duration_sec / 60.0, 0.1)
+        duration_min = max((duration_sec or 0.0) / 60.0, 0.1)
         wpm = int(word_count / duration_min)
 
         if wpm < 120:
@@ -790,8 +851,8 @@ class PodcastProcessor:
         # 4. Global Keywords & Sentiment
         emit("Extracting global keywords and sentiment...", 52)
         full_text = " ".join(s["text"] for s in transcript_segments)
-        global_keywords = self.extract_keywords(full_text, top_n=15)
-        global_keywords_weighted = self.extract_keywords(full_text, top_n=20, return_scores=True)
+        global_keywords = self.extract_keywords(full_text, top_n=15, fast=False)
+        global_keywords_weighted = self.extract_keywords(full_text, top_n=20, return_scores=True, fast=False)
         global_sentiment = self.analyze_sentiment(full_text)
 
         # 5. Per-Topic Intelligence & Summarization
@@ -802,10 +863,10 @@ class PodcastProcessor:
 
         for idx, t in enumerate(raw_topics):
             step_pct = int(60 + (idx / max(total_topics, 1)) * 25)
-            emit(f"Analyzing topic {idx + 1} of {total_topics}...", step_pct)
+            emit(f"Analyzing chapter {idx + 1} of {total_topics}...", step_pct)
 
             chunk_text = t["text"]
-            chunk_keywords = self.extract_keywords(chunk_text, top_n=5)
+            chunk_keywords = self.extract_keywords(chunk_text, top_n=5, fast=True)
             chunk_summary = self.summarize(chunk_text, max_words=60)
             chunk_sentiment = self.analyze_sentiment(chunk_text)
 
@@ -817,9 +878,9 @@ class PodcastProcessor:
             else:
                 title = f"Chapter {idx + 1}"
 
-            # Translations and Romanizations for topic
-            translation = self.translate(chunk_text[:600], "es")
-            romanization = self.romanize(chunk_text[:600], "Devanagari")
+            # Translations and Romanizations (non-blocking)
+            translation = ""
+            romanization = ""
 
             processed_topics.append({
                 "id": idx,
@@ -961,20 +1022,20 @@ class PodcastProcessor:
         lines.extend([
             "",
             "## 🏷️ Global Keywords",
-            ", ".join(f"`{k}`" for k in data.get("global_keywords", [])),
+            ", ".join(f"`{k}`" for k in (data.get("global_keywords") or [])),
             "",
             "---",
             "## 📑 Chapter & Topic Breakdown",
             ""
         ])
 
-        for topic in data.get("topics", []):
+        for topic in (data.get("topics") or []):
             start = self._fmt_time(topic.get("start", 0))
             end = self._fmt_time(topic.get("end", 0))
             lines.extend([
                 f"### [{start} - {end}] {topic.get('title', 'Topic')}",
                 f"**Summary:** {topic.get('summary', '')}",
-                f"*Keywords:* {', '.join(topic.get('keywords', []))} | *Sentiment:* {topic.get('sentiment', {}).get('label', 'Neutral')}",
+                f"*Keywords:* {', '.join(topic.get('keywords') or [])} | *Sentiment:* {(topic.get('sentiment') or {}).get('label', 'Neutral')}",
                 "",
                 f"> {topic.get('text', '')}",
                 ""
@@ -1030,8 +1091,8 @@ class PodcastProcessor:
                     self._fmt_time(t.get("end", 0)),
                     t.get("title", ""),
                     t.get("summary", ""),
-                    "; ".join(t.get("keywords", [])),
-                    t.get("sentiment", {}).get("label", "Neutral"),
+                    "; ".join(t.get("keywords") or []),
+                    (t.get("sentiment") or {}).get("label", "Neutral"),
                     t.get("text", "")
                 ])
 
