@@ -29,8 +29,9 @@ def process_audio(filepath: str, job_id: str, progress_callback=None):
     """
     from pipeline.podcast_tool import PodcastProcessor
 
+    model_name = os.environ.get("WHISPER_MODEL", "tiny")
     processor = PodcastProcessor(
-        whisper_model="base",
+        whisper_model=model_name,
         embedding_model="all-MiniLM-L6-v2",
         min_topic_duration_sec=60.0,
         similarity_threshold=0.52

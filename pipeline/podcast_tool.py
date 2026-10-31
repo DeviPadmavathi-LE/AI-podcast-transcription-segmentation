@@ -56,6 +56,11 @@ class ModelRegistry:
     def get_whisper(cls, model_size: str = "base"):
         import whisper
         import torch
+        if not torch.cuda.is_available():
+            try:
+                torch.set_num_threads(os.cpu_count() or 4)
+            except Exception:
+                pass
         with cls._whisper_lock:
             if cls._whisper_model is None or cls._whisper_size != model_size:
                 device = "cuda" if torch.cuda.is_available() else "cpu"

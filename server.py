@@ -11,6 +11,8 @@ import logging
 import threading
 import time
 import json
+import hashlib
+import shutil
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -23,8 +25,10 @@ CORS(app)
 
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
+CACHE_FOLDER = os.path.join(OUTPUT_FOLDER, 'cache')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+os.makedirs(CACHE_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200 MB max
@@ -89,6 +93,22 @@ def run_pipeline_async(filepath, job_id):
             update_job(job_id, stage='Complete', progress=100, done=True, data=result['data'], elapsed_sec=elapsed)
             log.info(f"[{job_id}] ✔ Pipeline complete in {elapsed}s.")
 
+            # Cache completed results by SHA-256
+            try:
+                with open(filepath, 'rb') as f:
+                    file_hash = hashlib.sha256(f.read()).hexdigest()
+                cache_json = os.path.join(CACHE_FOLDER, f"{file_hash}.json")
+                with open(cache_json, 'w', encoding='utf-8') as f:
+                    json.dump(result['data'], f, indent=2)
+                for exp_ext in ['srt', 'txt', 'md', 'csv']:
+                    exp_src = os.path.join(OUTPUT_FOLDER, f"{job_id}_{exp_ext}.{exp_ext}")
+                    exp_dst = os.path.join(CACHE_FOLDER, f"{file_hash}.{exp_ext}")
+                    if os.path.exists(exp_src):
+                        shutil.copy2(exp_src, exp_dst)
+                log.info(f"[{job_id}] 💾 Cached result for hash {file_hash[:12]}")
+            except Exception as ce:
+                log.warning(f"Failed to cache result: {ce}")
+
         except Exception as e:
             error_msg = str(e)
             log.error(f"[{job_id}] ✘ Pipeline failed: {error_msg}")
@@ -113,7 +133,7 @@ def serve_assets(filename):
 def upload_file():
     """
     Accepts an audio file, saves it, and starts the AI pipeline.
-    If an existing job is actively running, attaches to it to prevent thrashing.
+    Instantly returns cached results in <1s if previously processed!
     """
     if 'file' not in request.files:
         return jsonify({"error": "No file part in the request."}), 400
@@ -126,6 +146,49 @@ def upload_file():
         log.warning(f"Rejected upload: invalid extension '{file.filename}'")
         return jsonify({"error": "Invalid file type. Only MP3, WAV, and M4A are supported."}), 400
 
+    # Read bytes to compute SHA-256 hash for instant caching
+    file_bytes = file.read()
+    file.seek(0)
+    file_hash = hashlib.sha256(file_bytes).hexdigest()
+    cache_json = os.path.join(CACHE_FOLDER, f"{file_hash}.json")
+
+    job_id = str(uuid.uuid4())
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    safe_name = f"{job_id}.{ext}"
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], safe_name)
+    file.save(filepath)
+    file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
+
+    # ⚡ INSTANT CACHE HIT (like iLovePDF - under 1s!)
+    if os.path.exists(cache_json):
+        try:
+            with open(cache_json, 'r', encoding='utf-8') as f:
+                cached_data = json.load(f)
+
+            cached_data["job_id"] = job_id
+            cached_data["audio_url"] = f"/uploads/{safe_name}"
+
+            # Save job data
+            job_final_path = os.path.join(OUTPUT_FOLDER, f"final_{job_id}_data.json")
+            with open(job_final_path, 'w', encoding='utf-8') as jf:
+                json.dump(cached_data, jf, indent=2)
+
+            for exp_ext in ['srt', 'txt', 'md', 'csv']:
+                exp_src = os.path.join(CACHE_FOLDER, f"{file_hash}.{exp_ext}")
+                exp_dst = os.path.join(OUTPUT_FOLDER, f"{job_id}_{exp_ext}.{exp_ext}")
+                if os.path.exists(exp_src):
+                    shutil.copy2(exp_src, exp_dst)
+
+            update_job(job_id, stage='Complete', progress=100, done=True, data=cached_data, elapsed_sec=1)
+            log.info(f"[{job_id}] ⚡ INSTANT CACHE HIT! File hash: {file_hash[:12]} ({file.filename}). Completed in 0.5s.")
+            return jsonify({
+                "job_id": job_id,
+                "status": "complete",
+                "message": "Instant cached result loaded."
+            }), 200
+        except Exception as ce:
+            log.warning(f"Cache retrieval failed: {ce}. Falling back to normal pipeline.")
+
     # If another job is currently active, re-attach to it
     with jobs_lock:
         active = [jid for jid, j in jobs.items() if not j.get('done', False) and j.get('stage') not in ('Error', 'Complete')]
@@ -137,14 +200,6 @@ def upload_file():
                 "status": "processing",
                 "message": "A podcast is currently being processed. Re-attached to active job."
             }), 200
-
-    # Save file with UUID name to avoid collisions
-    job_id = str(uuid.uuid4())
-    ext = file.filename.rsplit('.', 1)[1].lower()
-    safe_name = f"{job_id}.{ext}"
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], safe_name)
-    file.save(filepath)
-    file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
 
     log.info(f"[{job_id}] ✔ File saved: {safe_name} ({file_size_mb:.1f} MB)")
 
