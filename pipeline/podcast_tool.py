@@ -545,10 +545,9 @@ class PodcastProcessor:
                 use_maxsum=True,
                 nr_candidates=min(top_n * 2, 16)
             )
-            if not pairs:
-                return self._fallback_keywords(text, top_n, return_scores)
             if return_scores:
                 return [{"keyword": kw, "score": round(float(sc), 3)} for kw, sc in pairs]
+            return [kw for kw, _ in pairs]
         except Exception as e:
             log.warning(f"KeyBERT failed ({e}), using TF-IDF fallback.")
             return self._fallback_keywords(text, top_n, return_scores)
