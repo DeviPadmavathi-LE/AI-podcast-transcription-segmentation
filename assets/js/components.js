@@ -559,12 +559,24 @@ const Components = {
     RomanizationView() {
         return `
             <div class="fade-in" style="max-width:1000px;margin:0 auto;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
                     <h2>Romanization Studio</h2>
                     <div style="font-size:0.8125rem;color:var(--text-secondary);
                                 background:var(--bg-hover);padding:0.4rem 0.9rem;border-radius:999px;">
                         Powered by Aksharamukha · IAST output
                     </div>
+                </div>
+                <div style="display:flex;gap:0.6rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;">
+                    <span style="font-size:0.8125rem;color:var(--text-secondary);font-weight:600;">⚡ Podcast Quick-Load:</span>
+                    <button id="btn-rom-telugu" style="padding:0.35rem 0.75rem;font-size:0.8125rem;border-radius:var(--radius-sm);background:var(--bg-hover);border:1px solid var(--border-color);color:var(--text-primary);cursor:pointer;font-weight:500;">
+                        🇮🇳 Load Telugu Podcast
+                    </button>
+                    <button id="btn-rom-hindi" style="padding:0.35rem 0.75rem;font-size:0.8125rem;border-radius:var(--radius-sm);background:var(--bg-hover);border:1px solid var(--border-color);color:var(--text-primary);cursor:pointer;font-weight:500;">
+                        🇮🇳 Load Hindi Podcast
+                    </button>
+                    <button id="btn-rom-sample" style="padding:0.35rem 0.75rem;font-size:0.8125rem;border-radius:var(--radius-sm);background:var(--bg-hover);border:1px solid var(--border-color);color:var(--text-primary);cursor:pointer;font-weight:500;">
+                        ✨ Load Sample Quote
+                    </button>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
                     <div class="card" style="height:50vh;display:flex;flex-direction:column;">
