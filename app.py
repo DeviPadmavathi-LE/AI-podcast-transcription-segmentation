@@ -8,32 +8,56 @@ DATA_PATH = "outputs"   # folder containing JSON files
 
 st.set_page_config(page_title="Podcast Topic Explorer", layout="wide")
 
-# ---------------- DARK THEME STYLE ----------------
+# ---------------- PREMIUM LIGHT THEME STYLE ----------------
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 html, body, [class*="css"] {
-    background-color: #0e1117;
-    color: white;
+    font-family: 'Inter', sans-serif;
+    background-color: #F8FAFC;
+    color: #0F172A;
 }
 .title{
-    font-size:40px;
-    font-weight:700;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    background: linear-gradient(135deg, #0F172A, #64748B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 .subtitle{
-    font-size:18px;
-    color:#9aa4b2;
-    margin-bottom:30px;
+    font-size: 18px;
+    color: #64748B;
+    margin-bottom: 30px;
 }
 .card{
-    background:#161b22;
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:20px;
+    background: #FFFFFF;
+    padding: 24px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    transition: all 0.2s ease;
+}
+.card:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    border-color: #CBD5E1;
 }
 .segment-title{
-    font-size:20px;
-    font-weight:600;
-    color:#58a6ff;
+    font-size: 20px;
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 10px;
+}
+mark {
+    background-color: #FEF08A !important;
+    color: #854D0E !important;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+.stProgress > div > div > div > div {
+    background-color: #2563EB;
 }
 </style>
 """, unsafe_allow_html=True)

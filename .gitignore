@@ -3,15 +3,28 @@ data/raw/
 data/wav/
 data/clean/
 data/chunks/
+uploads/
+outputs/preprocessed/
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.aac
 
-# Ignore Python cache files
+# Ignore Python cache & model weights
 __pycache__/
 *.pyc
+*.pt
+*.bin
+*.onnx
 
 # Ignore IDE/editor settings
 .vscode/
+.idea/
 
 # Ignore virtual environments
-.env/
+.venv/
 venv/
-
+env/
+.env/

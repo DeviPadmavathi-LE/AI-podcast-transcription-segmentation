@@ -1,241 +1,180 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Podcast Topic Navigator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TALK2TOPICS | AI Podcast Intelligence & Chapter Discovery</title>
+    
+    <!-- Navayr Luxury & Tech Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0a0a0a;
-    color: #e0e0e0;
-    height: 100vh;
-    overflow: hidden;
-}
-
-.container { display: flex; height: 100vh; }
-
-/* Sidebar */
-.sidebar {
-    width: 320px;
-    background: #151515;
-    border-right: 1px solid #2a2a2a;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-header {
-    padding: 24px;
-    border-bottom: 1px solid #2a2a2a;
-}
-
-.sidebar-header h1 { color: #fff; font-size: 22px; margin-bottom: 8px; }
-.sidebar-header p { font-size: 13px; color: #888; margin-bottom: 12px; }
-
-input[type="file"] {
-    width: 100%;
-    background: #1a1a1a;
-    color: #ccc;
-    border: 1px solid #2a2a2a;
-    padding: 8px;
-    border-radius: 6px;
-}
-
-/* Main */
-.main-content { flex: 1; display: flex; flex-direction: column; }
-
-.content-header {
-    padding: 24px 32px;
-    background: #151515;
-    border-bottom: 1px solid #2a2a2a;
-}
-
-.content-header h2 { font-size: 26px; color: #fff; margin-bottom: 6px; }
-.content-header .meta { font-size: 14px; color: #888; }
-
-.tabs {
-    display: flex;
-    background: #151515;
-    border-bottom: 1px solid #2a2a2a;
-}
-
-.tab {
-    padding: 14px 24px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: #888;
-    font-size: 14px;
-}
-
-.tab.active {
-    color: #6366f1;
-    border-bottom: 2px solid #6366f1;
-}
-
-.content-body {
-    flex: 1;
-    padding: 32px;
-    overflow-y: auto;
-}
-
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
-/* Cards */
-.segment-card, .summary-box, .transcript-box, .keyword-card {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-}
-
-.segment-title { color: #fff; font-size: 16px; font-weight: 600; }
-.segment-time { color: #6366f1; font-size: 13px; margin-top: 4px; }
-.segment-description { color: #aaa; margin-top: 10px; }
-
-.transcript-entry { margin-bottom: 18px; }
-.transcript-time { color: #6366f1; font-size: 12px; margin-bottom: 4px; }
-.transcript-text { color: #ccc; font-size: 14px; line-height: 1.6; }
-
-.keywords-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
-}
-
-.keyword-card { text-align: center; color: #fff; }
-
-/* Scroll */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
-</style>
+    <!-- Styles -->
+    <link rel="stylesheet" href="assets/css/main.css">
 </head>
-
 <body>
-<div class="container">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h1>Podcast Loader</h1>
-        <p>Upload processed JSON file</p>
-        <input type="file" id="fileInput" accept=".json">
+    <!-- Talkie Mascot Global Container -->
+    <div id="talkie-mascot" class="talkie-container hidden">
+        <svg id="talkie-svg" viewBox="0 0 100 100" class="talkie-idle">
+            <!-- Adaptive cute robot face -->
+            <rect x="20" y="30" width="60" height="40" rx="12" fill="var(--robot-body)" stroke="var(--border-color)" stroke-width="1.5" />
+            <rect x="25" y="35" width="50" height="30" rx="8" fill="var(--robot-face)" />
+            <circle cx="40" cy="50" r="4" fill="var(--robot-eye)" class="talkie-eye left-eye" />
+            <circle cx="60" cy="50" r="4" fill="var(--robot-eye)" class="talkie-eye right-eye" />
+            <path d="M45,60 Q50,62 55,60" stroke="var(--robot-eye)" stroke-width="2" fill="none" class="talkie-mouth" />
+            <line x1="50" y1="30" x2="50" y2="20" stroke="var(--robot-body)" stroke-width="3" />
+            <circle cx="50" cy="18" r="3.5" fill="var(--robot-accent)" class="talkie-antenna" />
+        </svg>
+        <div id="talkie-bubble" class="talkie-bubble hidden">Hi! I'm Talkie.</div>
     </div>
-</div>
 
-<!-- MAIN -->
-<div class="main-content">
+    <!-- App Shell -->
+    <div id="app" class="app-layout">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i data-lucide="layers" class="brand-icon"></i>
+                <span class="brand-name">TALK2TOPICS</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-link" data-route="dashboard">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="#upload" class="nav-link" data-route="upload">
+                    <i data-lucide="upload-cloud"></i> Upload
+                </a>
+                <a href="#library" class="nav-link" data-route="library">
+                    <i data-lucide="library"></i> Library
+                </a>
+                
+                <div class="nav-section">Insights</div>
+                
+                <a href="#transcript" class="nav-link" data-route="transcript">
+                    <i data-lucide="file-text"></i> Transcripts
+                </a>
+                <a href="#topics" class="nav-link" data-route="topics">
+                    <i data-lucide="hash"></i> Topic Explorer
+                </a>
+                <a href="#summary" class="nav-link" data-route="summary">
+                    <i data-lucide="zap"></i> AI Summary
+                </a>
+                <a href="#keywords" class="nav-link" data-route="keywords">
+                    <i data-lucide="bar-chart-2"></i> Keywords & Analytics
+                </a>
 
-<div class="content-header">
-    <h2 id="podcastTitle">No podcast loaded</h2>
-    <div class="meta" id="podcastMeta">Upload final_&lt;id&gt;_data.json</div>
-</div>
+                <div class="nav-section">Advanced</div>
 
-<div class="tabs">
-    <button class="tab active" onclick="switchTab('segments')">Segments</button>
-    <button class="tab" onclick="switchTab('summary')">Summary</button>
-    <button class="tab" onclick="switchTab('transcript')">Transcript</button>
-    <button class="tab" onclick="switchTab('keywords')">Keywords</button>
-</div>
+                <a href="#chat" class="nav-link" data-route="chat">
+                    <i data-lucide="message-square"></i> AI Chat
+                </a>
+                <a href="#translation" class="nav-link" data-route="translation">
+                    <i data-lucide="globe"></i> Translation
+                </a>
+                <a href="#romanization" class="nav-link" data-route="romanization">
+                    <i data-lucide="type"></i> Romanization
+                </a>
+            </nav>
 
-<div class="content-body">
+            <div class="sidebar-footer">
+                <a href="#settings" class="nav-link" data-route="settings">
+                    <i data-lucide="settings"></i> Settings
+                </a>
+                <a href="#help" class="nav-link" data-route="help">
+                    <i data-lucide="help-circle"></i> Help
+                </a>
+                <div class="made-with">
+                    Made with <i data-lucide="heart" class="heart-icon"></i>
+                </div>
+            </div>
+        </aside>
 
-<div id="segments" class="tab-content active">
-    <div id="segmentsList"></div>
-</div>
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Global Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button id="menu-toggle-btn" class="icon-btn menu-toggle-btn" aria-label="Toggle Navigation" title="Toggle Sidebar">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <div class="search-container">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="global-search" placeholder="Search transcripts, topics, insights...">
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Navayr Theme Switcher: Light (Creme & Burgundy) / Dark (Obsidian Black) -->
+                    <button id="theme-toggle-btn" class="theme-toggle-pill" aria-label="Switch Theme" title="Toggle Light / Dark Theme">
+                        <span class="theme-pill-icon light-icon" title="Creme & Burgundy">
+                            <i data-lucide="sun" width="14" height="14"></i>
+                        </span>
+                        <span class="theme-pill-icon dark-icon" title="Obsidian Black">
+                            <i data-lucide="moon" width="14" height="14"></i>
+                        </span>
+                        <span class="theme-pill-slider"></span>
+                    </button>
 
-<div id="summary" class="tab-content">
-    <div id="summaryContent" class="summary-box"></div>
-</div>
+                    <button class="btn-outline export-btn" onclick="app.showExportModal()">
+                        <i data-lucide="download"></i> Export
+                    </button>
+                    <div class="avatar-circle">
+                        <i data-lucide="user"></i>
+                    </div>
+                </div>
+            </header>
 
-<div id="transcript" class="tab-content">
-    <div id="transcriptContent" class="transcript-box"></div>
-</div>
+            <!-- Dynamic Route Content -->
+            <div id="route-content" class="route-container">
+                <!-- Views will be injected here by app.js -->
+            </div>
+            
+        </main>
+    </div>
 
-<div id="keywords" class="tab-content">
-    <div id="keywordsContent" class="keywords-grid"></div>
-</div>
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Export Center</h2>
+                <button class="icon-btn" onclick="app.hideExportModal()"><i data-lucide="x"></i></button>
+            </div>
+            <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:1rem;">
+                Download your podcast data in any of these formats.
+            </p>
+            <div class="export-grid">
+                <button class="export-card" onclick="app.download('txt')">
+                    <i data-lucide="file-type"></i> TXT
+                </button>
+                <button class="export-card" onclick="app.download('json')">
+                    <i data-lucide="database"></i> JSON
+                </button>
+                <button class="export-card" onclick="app.download('srt')">
+                    <i data-lucide="film"></i> SRT Subtitles
+                </button>
+                <button class="export-card" onclick="app.download('md')">
+                    <i data-lucide="file-code"></i> Markdown
+                </button>
+                <button class="export-card" onclick="app.download('csv')">
+                    <i data-lucide="table"></i> CSV
+                </button>
+            </div>
+        </div>
+    </div>
 
-</div>
-</div>
-</div>
-
-<script>
-let segmentsData = [];
-
-document.getElementById("fileInput").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = evt => {
-        segmentsData = JSON.parse(evt.target.result);
-        loadPodcast(file.name);
-    };
-    reader.readAsText(file);
-});
-
-function generateTitle(keywords) {
-    return keywords.slice(0, 2).join(" & ").replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function loadPodcast(filename) {
-    document.getElementById("podcastTitle").textContent = filename.replace(".json", "");
-    document.getElementById("podcastMeta").textContent = `${segmentsData.length} segments loaded`;
-
-    renderSegments();
-    renderSummary();
-    renderTranscript();
-    renderKeywords();
-}
-
-function renderSegments() {
-    document.getElementById("segmentsList").innerHTML =
-        segmentsData.map(seg => `
-        <div class="segment-card">
-            <div class="segment-title">${generateTitle(seg.keywords)}</div>
-            <div class="segment-time">${formatTime(seg.start)} – ${formatTime(seg.end)}</div>
-            <div class="segment-description">${seg.summary}</div>
-        </div>`).join("");
-}
-
-function renderSummary() {
-    document.getElementById("summaryContent").innerHTML =
-        `<p>${segmentsData[0]?.summary || "Segment-wise summaries available."}</p>`;
-}
-
-function renderTranscript() {
-    document.getElementById("transcriptContent").innerHTML =
-        segmentsData.map(seg => `
-        <div class="transcript-entry">
-            <div class="transcript-time">${formatTime(seg.start)}</div>
-            <div class="transcript-text">${seg.transcript}</div>
-        </div>`).join("");
-}
-
-function renderKeywords() {
-    const keywords = [...new Set(segmentsData.flatMap(s => s.keywords))];
-    document.getElementById("keywordsContent").innerHTML =
-        keywords.map(k => `<div class="keyword-card">${k}</div>`).join("");
-}
-
-function formatTime(sec) {
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${s.toString().padStart(2,'0')}`;
-}
-
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById(tab).classList.add('active');
-}
-</script>
+    <!-- Scripts -->
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/mascot.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/app.js"></script>
 </body>
 </html>

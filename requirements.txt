@@ -1,9 +1,33 @@
+# TALK2TOPICS — Python Dependencies
+# Backend: Flask
+Flask
+flask-cors
+werkzeug
+
+# AI Pipeline
+openai-whisper
+sentence-transformers
+keybert
+transformers
+torch
+torchvision
+torchaudio
+
+# NLP / ML
+numpy
+pandas
+scikit-learn
+
+# Audio processing
+pydub
 librosa
 soundfile
 noisereduce
-numpy
 scipy
-pydub
-sentence-transformers
-scikit-learn
-torch
+
+# Translation & Romanization
+argostranslate
+aksharamukha
+
+# Accelerate HuggingFace pipelines (optional but recommended)
+accelerate
