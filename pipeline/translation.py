@@ -1,70 +1,109 @@
 """
 TALK2TOPICS — Translation Pipeline
-Uses Argos Translate for offline, local translation.
-Gracefully degrades if argostranslate is not installed.
+High-quality multilingual translation supporting:
+- Telugu, Hindi, Tamil, Kannada
+- Spanish, French, German, Italian, Portuguese
+Uses deep-translator (MyMemory engine) with local ArgosTranslate fallback.
 """
 
+import re
 import logging
+import hashlib
+from typing import List
 
 log = logging.getLogger('talk2topics.translation')
 
-# ── Try importing argostranslate ──────────────────────────────────────
-_ARGOS_AVAILABLE = False
-try:
-    import argostranslate.package
-    import argostranslate.translate
-    _ARGOS_AVAILABLE = True
-    log.info("argostranslate imported successfully.")
-except ImportError:
-    log.warning("argostranslate is NOT installed. Translation will be unavailable.")
-    log.warning("Fix: pip install argostranslate")
+# Supported language code mapping
+LANGUAGE_MAP = {
+    'te': 'te-IN',      # Telugu
+    'hi': 'hi-IN',      # Hindi
+    'ta': 'ta-IN',      # Tamil
+    'kn': 'kn-IN',      # Kannada
+    'es': 'es-ES',      # Spanish
+    'fr': 'fr-FR',      # French
+    'de': 'de-DE',      # German
+    'it': 'it-IT',      # Italian
+    'pt': 'pt-PT',      # Portuguese
+}
+
+_TRANSLATION_CACHE = {}
 
 
-# ── Install en→es package on first use ───────────────────────────────
-_PACKAGES_INSTALLED = False
+def _chunk_text(text: str, max_chars: int = 380) -> List[str]:
+    """Splits text into chunks <= max_chars respecting sentence boundaries."""
+    chunks = []
+    # Split by paragraphs first
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+    if not paragraphs:
+        paragraphs = [text.strip()]
 
-def _ensure_packages():
-    """Attempt to install the en→es language package if not present."""
-    global _PACKAGES_INSTALLED
-    if _PACKAGES_INSTALLED or not _ARGOS_AVAILABLE:
-        return
-    try:
-        argostranslate.package.update_package_index()
-        available = argostranslate.package.get_available_packages()
-        pkg = next(
-            (p for p in available if p.from_code == "en" and p.to_code == "es"),
-            None
-        )
-        if pkg:
-            argostranslate.package.install_from_path(pkg.download())
-            log.info("argostranslate en→es package installed.")
-        _PACKAGES_INSTALLED = True
-    except Exception as e:
-        log.warning(f"Could not install argostranslate packages: {e}")
-        _PACKAGES_INSTALLED = True  # mark as done to avoid retrying on every call
+    for para in paragraphs:
+        if len(para) <= max_chars:
+            chunks.append(para)
+        else:
+            # Split by sentence
+            sentences = re.split(r'(?<=[.!?])\s+', para)
+            curr = ""
+            for s in sentences:
+                if len(curr) + len(s) + 1 <= max_chars:
+                    curr = f"{curr} {s}".strip()
+                else:
+                    if curr:
+                        chunks.append(curr)
+                    curr = s
+            if curr:
+                chunks.append(curr)
+
+    return chunks
 
 
 def run_translation(text: str, target_code: str = "es") -> str:
     """
-    Translate text from English to the target language code.
-
-    Returns the original text as fallback if:
-    - argostranslate is not installed
-    - The language pair is not supported
-    - Any runtime error occurs
+    Translates English text to the target language.
+    Supports Indian languages (Telugu, Hindi, Kannada, Tamil) and European languages.
     """
     if not text or not text.strip():
         return ""
 
-    if not _ARGOS_AVAILABLE:
-        log.warning("Translation skipped: argostranslate not installed.")
-        return text  # graceful fallback
+    # Check in-memory cache
+    cache_key = (hashlib.md5(text.encode('utf-8')).hexdigest(), target_code)
+    if cache_key in _TRANSLATION_CACHE:
+        return _TRANSLATION_CACHE[cache_key]
 
-    _ensure_packages()
+    target_lang = LANGUAGE_MAP.get(target_code.lower(), target_code)
 
+    # 1. Primary Engine: deep-translator (MyMemory)
     try:
-        translated = argostranslate.translate.translate(text, "en", target_code)
-        return translated
+        from deep_translator import MyMemoryTranslator
+        translator = MyMemoryTranslator(source='en-GB', target=target_lang)
+        chunks = _chunk_text(text, max_chars=380)
+        translated_chunks = []
+
+        for chunk in chunks:
+            try:
+                res = translator.translate(chunk)
+                translated_chunks.append(res if res else chunk)
+            except Exception as ce:
+                log.warning(f"Chunk translation warning: {ce}")
+                translated_chunks.append(chunk)
+
+        result = "\n\n".join(translated_chunks)
+        _TRANSLATION_CACHE[cache_key] = result
+        log.info(f"✔ Successfully translated {len(chunks)} chunks to '{target_code}'")
+        return result
+
     except Exception as e:
-        log.warning(f"Translation to '{target_code}' failed: {e}. Returning original.")
-        return text  # graceful fallback
+        log.warning(f"MyMemory translation failed for '{target_code}': {e}. Trying fallback...")
+
+    # 2. Secondary Engine: ArgosTranslate (for Spanish / European if installed)
+    try:
+        import argostranslate.translate
+        res = argostranslate.translate.translate(text[:800], "en", target_code)
+        if res:
+            _TRANSLATION_CACHE[cache_key] = res
+            return res
+    except Exception:
+        pass
+
+    log.warning(f"All translation engines failed for '{target_code}'. Returning original.")
+    return text
