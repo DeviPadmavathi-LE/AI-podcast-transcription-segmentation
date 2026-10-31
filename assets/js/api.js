@@ -163,6 +163,11 @@ const API = {
         return await this._post('/chat', {
             query,
             transcript: this.currentData.transcript,
+            executive_summary: this.currentData.executive_summary || '',
+            key_takeaways: this.currentData.key_takeaways || [],
+            topics: this.currentData.topics || [],
+            speakers: this.currentData.speakers || [],
+            keywords: this.currentData.global_keywords || [],
         });
     },
 

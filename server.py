@@ -255,6 +255,13 @@ def chat_endpoint():
 
     query = data.get('query', '').strip()
     transcript = data.get('transcript', [])
+    context = data.get('context') or {
+        'executive_summary': data.get('executive_summary', ''),
+        'key_takeaways': data.get('key_takeaways', []),
+        'topics': data.get('topics', []),
+        'speakers': data.get('speakers', []),
+        'keywords': data.get('keywords', [])
+    }
 
     if not query:
         return jsonify({"error": "Query cannot be empty."}), 400
@@ -264,7 +271,7 @@ def chat_endpoint():
     log.info(f"Chat query: '{query}' against {len(transcript)} segments.")
 
     from pipeline.chat import search_transcript
-    result = search_transcript(query, transcript)
+    result = search_transcript(query, transcript, context=context)
     return jsonify(result), 200
 
 
@@ -434,5 +441,17 @@ if __name__ == '__main__':
     log.info("  TALK2TOPICS AI Backend")
     log.info("  http://localhost:5000")
     log.info("=" * 60)
+
+    # Pre-warm sentence embedder in background thread for instant (<0.05s) chat response
+    def _prewarm_models():
+        try:
+            from pipeline.chat import _get_embedder
+            _get_embedder()
+            log.info("✔ Pre-warmed sentence embedder into memory.")
+        except Exception as e:
+            log.warning(f"Embedder pre-warm error: {e}")
+
+    threading.Thread(target=_prewarm_models, daemon=True).start()
+
     # use_reloader=False — prevents Flask from reloading when PyTorch touches site-packages
     app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
