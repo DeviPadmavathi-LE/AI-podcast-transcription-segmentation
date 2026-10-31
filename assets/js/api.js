@@ -13,17 +13,30 @@ const API = {
     // ─── Helpers ─────────────────────────────────────────────────────
     delay: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
 
-    BASE_URL: 'http://localhost:5000',
+    get BASE_URL() {
+        if (window.BACKEND_URL) return window.BACKEND_URL;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:5000';
+        }
+        return window.BACKEND_URL || 'http://localhost:5000';
+    },
 
     async _post(endpoint, body) {
-        const res = await fetch(`${this.BASE_URL}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-        return data;
+        try {
+            const res = await fetch(`${this.BASE_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+            return data;
+        } catch (err) {
+            if (err.message && err.message.includes('Failed to fetch')) {
+                throw new Error(`Cannot reach AI backend at ${this.BASE_URL}. Ensure server.py is running!`);
+            }
+            throw err;
+        }
     },
 
     async _get(endpoint) {

@@ -1,0 +1,15 @@
+# Ignore Python backend files for Vercel static build
+requirements.txt
+server.py
+app.py
+pipeline/
+podcast_tool.py
+scripts/
+data/
+uploads/
+outputs/
+*.wav
+*.mp3
+*.m4a
+*.py
+*.pyc
